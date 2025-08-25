@@ -20,7 +20,6 @@ class Localisation:
     
     COMPRESS_SUCCESS =  "𝙴𝙽𝙲𝙾𝙳𝙴𝙳 𝙱𝚈 ➼ @Encoder_log_bot
 𝙱𝙾𝚃 𝙱𝚈 ➼ @SECRECT_BOT_UPDATES
-
 𝙼𝚊𝚍𝚎 𝙱𝚢➛ @Lord_Vasudev_Krishna"
 
     COMPRESS_PROGRESS = "<blockquote>⏳ ETA: {}\n🚀 Pʀᴏɢʀᴇꜱꜱ: {}%</blockquote>"
