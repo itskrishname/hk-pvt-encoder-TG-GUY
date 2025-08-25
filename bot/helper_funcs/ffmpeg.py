@@ -49,7 +49,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     resolution.append("854x480")
     preset.append("veryfast")
     audio_b.append("35k")
-    file_genertor_command =  f"ffmpeg -hide_banner -loglevel quiet -progress '{progress}' -i '{video_file}' -metadata 'title=Download from @Anime_Mayhem' -c:v {codec[0]}  -map 0 -crf {crf[0]} -c:s copy -pix_fmt yuv420p -s {resolution[0]} -b:v 150k -c:a libopus -b:a {audio_b[0]} -preset {preset[0]} -metadata:s:v 'title=@Anime_Mayhem' -metadata:s:a 'title=@Anime_Mayhem' -metadata:s:s 'title=@Anime_Mayhem' '{out_put_file_name}' -y"
+    file_genertor_command =  f"ffmpeg -hide_banner -loglevel quiet -progress '{progress}' -i '{video_file}' -metadata 'title=Download from @NEW_ANIMES_HINDI_DUB_INDIA' -c:v {codec[0]}  -map 0 -crf {crf[0]} -c:s copy -pix_fmt yuv420p -s {resolution[0]} -b:v 150k -c:a libopus -b:a {audio_b[0]} -preset {preset[0]} -metadata:s:v 'title=@SECRECT_BOT_UPDATES' -metadata:s:a 'title=@SECRECT_BOT_UPDATES' -metadata:s:s 'title=@NEW_ANIMES_HINDI_DUB_INDIA' '{out_put_file_name}' -y"
  #Done !!
     COMPRESSION_START_TIME = time.time()
     process = await asyncio.create_subprocess_shell(
@@ -133,7 +133,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     r = stderr.decode()
     try:
         if er:
-           await message.edit_text(str(er) + "\n\n**ERROR** Contact @Chowdhury_Siam")
+           await message.edit_text(str(er) + "\n\n**ERROR** Contact @Lord_Vasudev_Krishna")
            os.remove(videofile)
            os.remove(out_put_file_name)
            return None
