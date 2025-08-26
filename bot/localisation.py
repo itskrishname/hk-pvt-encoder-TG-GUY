@@ -12,7 +12,7 @@ class Localisation:
     
     UPLOAD_START = "Uᴘʟᴏᴀᴅɪɴɢ...📤"
     
-    COMPRESS_START = "Tʀʏɪɴɢ ᴛᴏ Eɴᴄᴏᴅᴇ...📀"
+    COMPRESS_START = "『 📀  Tʀʏɪɴɢ ᴛᴏ Eɴᴄᴏᴅᴇ... ⏳ 』"
     
     RCHD_BOT_API_LIMIT = "size greater than maximum allowed size (50MB). Neverthless, trying to upload."
     
