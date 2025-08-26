@@ -10,7 +10,7 @@ class Localisation:
     
     DOWNLOAD_START = "『 📥  Dᴏᴡɴʟᴏᴀᴅɪɴɢ... ⏳ 』" 
     
-    UPLOAD_START = "Uᴘʟᴏᴀᴅɪɴɢ...📤"
+    UPLOAD_START = "『 📤  Uᴘʟᴏᴀᴅɪɴɢ... ⏳ 』"
     
     COMPRESS_START = "『 📀  Tʀʏɪɴɢ ᴛᴏ Eɴᴄᴏᴅᴇ... ⏳ 』"
     
