@@ -1,5 +1,4 @@
 import logging
-from hachoir.parser import createParser
 logging.basicConfig(
     level=logging.DEBUG, 
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
