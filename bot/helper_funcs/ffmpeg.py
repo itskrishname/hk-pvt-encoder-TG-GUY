@@ -1,3 +1,4 @@
+from hachoir.parser import createParser
 import logging
 logging.basicConfig(
     level=logging.DEBUG, 
