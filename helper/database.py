@@ -1,94 +1,98 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import MONGO_URI, MONGO_DB, MONGO_COLLECTION
+from bot.config import Config
 
-class SettingsDB:
+class Database:
     def __init__(self):
-        # Connect to MongoDB using Motor
-        self.client = AsyncIOMotorClient(MONGO_URI)
-        self.db = self.client[MONGO_DB]
-        self.collection = self.db[MONGO_COLLECTION]
-
-        # Default values
-        self.defaults = {
-            "crf": "30",
-            "preset": "veryfast",
-            "resolution": "1280x720",
-            "audio_b": "64k",
-            "audio_codec": "aac",
-            "video_codec": "libx264",
-            "video_bitrate": None,  # 0 will be converted to None
-            "watermark": None
-        }
-
-    async def init_config(self):
-        """Ensure a single config document exists"""
-        doc = await self.collection.find_one({"_id": "config"})
-        if not doc:
-            await self.collection.insert_one({"_id": "config", **self.defaults})
-
-    async def set_value(self, key: str, value):
-        """Set a specific setting value"""
-        if key not in self.defaults:
-            raise ValueError(f"Invalid key: {key}")
-        # Convert 0 to None for video_bitrate
-        if key == "video_bitrate" and value == 0:
-            value = None
-        await self.collection.update_one({"_id": "config"}, {"$set": {key: value}}, upsert=True)
-
-    async def get_value(self, key: str):
-        """Get current value of a setting"""
-        doc = await self.collection.find_one({"_id": "config"})
-        if not doc:
-            return self.defaults.get(key)
-        return doc.get(key, self.defaults.get(key))
-
-    # Optional: individual helpers
-    async def set_crf(self, value: str):
-        await self.set_value("crf", value)
-
+        self.client = AsyncIOMotorClient(
+            Config.MONGO_URI,
+            maxPoolSize=50,
+            minPoolSize=5,
+            serverSelectionTimeoutMS=5000
+        )
+        self.db = self.client[Config.DB_NAME]
+        self.collection = self.db[Config.COLLECTION_NAME]
+        try:
+            self.client.admin.command('ping')
+            print("MongoDB connection successful")
+        except Exception as e:
+            print(f"MongoDB connection failed: {e}")
+    
+    defaults = {
+        "crf": 24,
+        "preset": "veryfast",
+        "resolution": "640x360",
+        "audio_b": "64k",
+        "audio_codec": "aac",
+        "video_codec": "libx264",
+        "video_bitrate": 0,
+        "bits": "8",
+        "watermark": 0
+    }
+    
     async def get_crf(self):
-        return await self.get_value("crf")
-
-    async def set_preset(self, value: str):
-        await self.set_value("preset", value)
-
-    async def get_preset(self):
-        return await self.get_value("preset")
-
-    async def set_resolution(self, value: str):
-        await self.set_value("resolution", value)
-
-    async def get_resolution(self):
-        return await self.get_value("resolution")
-
-    async def set_audio_b(self, value: str):
-        await self.set_value("audio_b", value)
-
-    async def get_audio_b(self):
-        return await self.get_value("audio_b")
-
-    async def set_audio_codec(self, value: str):
-        await self.set_value("audio_codec", value)
-
-    async def get_audio_codec(self):
-        return await self.get_value("audio_codec")
-
-    async def set_video_codec(self, value: str):
-        await self.set_value("video_codec", value)
-
-    async def get_video_codec(self):
-        return await self.get_value("video_codec")
-
-    async def set_video_bitrate(self, value: int):
-        await self.set_value("video_bitrate", value)
-
-    async def get_video_bitrate(self):
-        return await self.get_value("video_bitrate")
-
-    async def set_watermark(self, value: str | None):
-        await self.set_value("watermark", value)
-
+        doc = await self.collection.find_one({"_id": "crf"})
+        return doc["value"] if doc else self.defaults["crf"]
+    
+    async def set_crf(self, value):
+        await self.collection.replace_one({"_id": "crf"}, {"_id": "crf", "value": value}, upsert=True)
+    
     async def get_watermark(self):
-        return await self.get_value("watermark")
+        doc = await self.collection.find_one({"_id": "watermark"})
+        value = doc["value"] if doc else self.defaults["watermark"]
+        return None if value == 0 else value
+    
+    async def set_watermark(self, value):
+        await self.collection.replace_one({"_id": "watermark"}, {"_id": "watermark", "value": value}, upsert=True)
+    
+    async def get_resolution(self):
+        doc = await self.collection.find_one({"_id": "resolution"})
+        return doc["value"] if doc else self.defaults["resolution"]
+    
+    async def set_resolution(self, value):
+        await self.collection.replace_one({"_id": "resolution"}, {"_id": "resolution", "value": value}, upsert=True)
+    
+    async def get_audio_b(self):
+        doc = await self.collection.find_one({"_id": "audio_b"})
+        return doc["value"] if doc else self.defaults["audio_b"]
+    
+    async def set_audio_b(self, value):
+        await self.collection.replace_one({"_id": "audio_b"}, {"_id": "audio_b", "value": value}, upsert=True)
+    
+    async def get_preset(self):
+        doc = await self.collection.find_one({"_id": "preset"})
+        return doc["value"] if doc else self.defaults["preset"]
+    
+    async def set_preset(self, value):
+        await self.collection.replace_one({"_id": "preset"}, {"_id": "preset", "value": value}, upsert=True)
+    
+    async def get_audio_codec(self):
+        doc = await self.collection.find_one({"_id": "audio_codec"})
+        return doc["value"] if doc else self.defaults["audio_codec"]
+    
+    async def set_audio_codec(self, value):
+        await self.collection.replace_one({"_id": "audio_codec"}, {"_id": "audio_codec", "value": value}, upsert=True)
+    
+    async def get_video_codec(self):
+        doc = await self.collection.find_one({"_id": "video_codec"})
+        return doc["value"] if doc else self.defaults["video_codec"]
+    
+    async def set_video_codec(self, value):
+        await self.collection.replace_one({"_id": "video_codec"}, {"_id": "video_codec", "value": value}, upsert=True)
+    
+    async def get_video_bitrate(self):
+        doc = await self.collection.find_one({"_id": "video_bitrate"})
+        value = doc["value"] if doc else self.defaults["video_bitrate"]
+        return None if value == 0 else value
+    
+    async def set_video_bitrate(self, value):
+        await self.collection.replace_one({"_id": "video_bitrate"}, {"_id": "video_bitrate", "value": value}, upsert=True)
 
-db = SettingsDB()
+    async def get_bits(self):
+        doc = await self.collection.find_one({"_id": "bits"})
+        return doc["value"] if doc else self.defaults["bits"]
+    
+    async def set_bits(self, value):
+        await self.collection.replace_one({"_id": "bits"}, {"_id": "bits", "value": value}, upsert=True)
+            
+
+db = Database()
