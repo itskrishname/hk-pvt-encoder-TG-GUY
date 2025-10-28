@@ -62,27 +62,10 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-i", video_file
     ]
 
-    # Download and apply watermark image if not None
-    watermark_file = None
+    
     if watermark is not None:
-        watermark_file = os.path.join(output_directory, "watermark.png")
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(watermark) as resp:
-                    if resp.status == 200:
-                        with open(watermark_file, 'wb') as f:
-                            f.write(await resp.read())
-                        # Add watermark input and complex filter
-                        ffmpeg_cmd.extend(["-i", watermark_file])
-                        ffmpeg_cmd.extend(["-filter_complex", "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"])
-                    else:
-                        logger.error(f"Failed to download watermark image from {watermark}: HTTP {resp.status}")
-                        await message.reply_text("<blockquote>Error: Could not download watermark image.</blockquote>")
-                        return None
-        except Exception as e:
-            logger.error(f"Error downloading watermark image: {e}")
-            await message.reply_text("<blockquote>Error: Could not download watermark image.</blockquote>")
-            return None
+        ffmpeg_cmd.extend(["-i", watermark])
+        ffmpeg_cmd.extend(["-filter_complex", "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"])
 
     ffmpeg_cmd.extend([
         "-c:v", video_codec,
@@ -199,13 +182,6 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     logger.info(f"FFmpeg stderr: {e_response}")
 
     del pid_list[0]
-
-    # Clean up watermark file if used
-    if watermark_file and os.path.exists(watermark_file):
-        try:
-            os.remove(watermark_file)
-        except Exception as e:
-            logger.error(f"Failed to delete watermark file: {e}")
 
     if os.path.exists(out_put_file_name):
         return out_put_file_name
