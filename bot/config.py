@@ -15,7 +15,7 @@ class Config(object):
     AUTH_USERS = [7660990923, 7465574522]
 
     #Channels
-    LOG_CHANNEL = get_config("LOG_CHANNEL", "-1002546406481")
+    LOG_CHANNEL = get_config("LOG_CHANNEL", "Lod_krishna")
     UPDATES_CHANNEL = get_config("UPDATES_CHANNEL", None) # Without `@` LOL
 
     #Mongo DB: (Added by @Telegram_Guyz in github 🌚) 
