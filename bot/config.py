@@ -4,22 +4,22 @@ class Config(object):
     #Session
     SESSION_NAME = get_config("SESSION_NAME", "EncoderX") 
     #Telegram Credentials 
-    APP_ID = int(get_config("APP_ID", ""))
-    API_HASH = get_config("API_HASH", "")
+    APP_ID = int(get_config("APP_ID", "28891870"))
+    API_HASH = get_config("API_HASH", "ffc3794690bf254d2867ac58fd293a60")
 
     # Bot Credentials 
     TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "")
     BOT_USERNAME = get_config("BOT_USERNAME", "") #Without @
 
     # User or group id (Seperated by commas 
-    AUTH_USERS = [1234, 5678]
+    AUTH_USERS = [7660990923, 2089948673]
 
     #Channels
     LOG_CHANNEL = get_config("LOG_CHANNEL", "")
     UPDATES_CHANNEL = get_config("UPDATES_CHANNEL", None) # Without `@` LOL
 
     #Mongo DB: (Added by @Telegram_Guyz in github 🌚) 
-    MONGO_URI = get_config("MONGO_URI", "") #Required 
+    MONGO_URI = get_config("MONGO_URI", "mongodb+srv://raj:krishna@cluster0.eq8xrjs.mongodb.net/") #Required 
     DB_NAME = get_config("DB_NAME", "TGguy") #Required
     COLLECTION_NAME = get_config("COLLECTION_NAME", "Stores") #Required
 
