@@ -8,14 +8,14 @@ class Config(object):
     API_HASH = get_config("API_HASH", "ffc3794690bf254d2867ac58fd293a60")
 
     # Bot Credentials 
-    TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "")
-    BOT_USERNAME = get_config("BOT_USERNAME", "") #Without @
+    TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8154318985:AAEYwKl9LNwo00HQRFKKmHACOMz1Of3Y9fU")
+    BOT_USERNAME = get_config("BOT_USERNAME", "Oaid_enc_bot") #Without @
 
     # User or group id (Seperated by commas 
-    AUTH_USERS = [7660990923, 2089948673]
+    AUTH_USERS = [7660990923, 7465574522]
 
     #Channels
-    LOG_CHANNEL = get_config("LOG_CHANNEL", "")
+    LOG_CHANNEL = get_config("LOG_CHANNEL", "-1002546406481")
     UPDATES_CHANNEL = get_config("UPDATES_CHANNEL", None) # Without `@` LOL
 
     #Mongo DB: (Added by @Telegram_Guyz in github 🌚) 
