@@ -121,59 +121,93 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         f.seek(0)
         json.dump(statusMsg, f, indent=2)
 
+    # === HEROKU-PROOF PROGRESS LOOP ===
     isDone = False
+    last_percentage = -1
+    stuck_counter = 0
+    speed = 1.0
+
     while process.returncode is None:
         await asyncio.sleep(3)
-        with open(progress, 'r+') as file:
-            text = file.read()
-            frame = re.findall("frame=(\d+)", text)
-            time_in_us = re.findall("out_time_ms=(\d+)", text)
-            progress_status = re.findall("progress=(\w+)", text)
-            speed = re.findall("speed=(\d+\.?\d*)", text)
-            if frame:
-                frame = int(frame[-1])
+        try:
+            if not os.path.exists(progress):
+                stuck_counter += 1
+                if stuck_counter > 10:
+                    logger.warning("progress.txt missing for 30s, continuing...")
+                continue
+
+            with open(progress, 'r', encoding='utf-8', errors='ignore') as file:
+                text = file.read().strip()
+
+            if not text:
+                continue
+
+            # Parse FFmpeg progress
+            frame_match = re.search(r"frame=(\d+)", text)
+            time_match = re.search(r"out_time_ms=(\d+)", text)
+            progress_match = re.search(r"progress=(\w+)", text)
+            speed_match = re.search(r"speed=([\d.]+)x", text)
+
+            if time_match:
+                elapsed_us = int(time_match.group(1))
+                elapsed_time = elapsed_us / 1_000_000
             else:
-                frame = 1
-            if speed:
-                speed = speed[-1]
+                elapsed_time = 0
+
+            if speed_match:
+                speed = float(speed_match.group(1))
             else:
-                speed = 1
-            if time_in_us:
-                time_in_us = time_in_us[-1]
-            else:
-                time_in_us = 1
-            if progress_status and progress_status[-1] == "end":
-                logger.info("FFmpeg process completed")
+                speed = 1.0
+
+            if progress_match and progress_match.group(1) == "end":
+                logger.info("FFmpeg reported 'progress=end'")
                 isDone = True
                 break
-            execution_time = TimeFormatter((time.time() - COMPRESSION_START_TIME) * 1000)
-            elapsed_time = int(time_in_us) / 1000000
-            difference = math.floor((total_time - elapsed_time) / float(speed))
-            ETA = "-" if difference <= 0 else TimeFormatter(difference * 1000)
-            percentage = math.floor(elapsed_time * 100 / total_time)
-            progress_str = "♻️<b>ᴘʀᴏɢʀᴇss:</b> {0}%\n[{1}{2}]".format(
-                round(percentage, 2),
-                ''.join([FINISHED_PROGRESS_STR for i in range(math.floor(percentage / 10))]),
-                ''.join([UN_FINISHED_PROGRESS_STR for i in range(10 - math.floor(percentage / 10))])
-            )
-            stats = (
-                f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
-                f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n\n'
-                f'{progress_str}\n'
-            )
-            try:
-                await message.edit_text(
-                    text=stats,
-                    reply_markup=InlineKeyboardMarkup(
-                        [[InlineKeyboardButton('❌ Cancel ❌', callback_data='fuckingdo')]]
-                    )
+
+            # Calculate percentage (cap at 99%)
+            percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
+
+            if percentage > last_percentage:
+                last_percentage = percentage
+                stuck_counter = 0
+
+                # ETA
+                remaining = (total_time - elapsed_time) / speed if speed > 0 else 0
+                ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
+
+                # Progress bar
+                filled = percentage // 10
+                empty = 10 - filled
+                progress_bar = f"[{''.join([FINISHED_PROGRESS_STR] * filled)}{''.join([UN_FINISHED_PROGRESS_STR] * empty)}]"
+
+                stats = (
+                    f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
+                    f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n'
+                    f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n\n'
+                    f'♻️ <b>ᴘʀᴏɢʀᴇss:</b> {percentage}%\n{progress_bar}\n'
                 )
-            except:
-                pass
-            try:
-                await chan_msg.edit_text(text=stats)
-            except:
-                pass
+
+                try:
+                    await message.edit_text(
+                        text=stats,
+                        reply_markup=InlineKeyboardMarkup(
+                            [[InlineKeyboardButton('❌ Cancel ❌', callback_data='fuckingdo')]]
+                        )
+                    )
+                except:
+                    pass
+                try:
+                    await chan_msg.edit_text(text=stats)
+                except:
+                    pass
+
+                logger.debug(f"Progress: {percentage}% | Speed: {speed:.2f}x | ETA: {ETA}")
+
+        except Exception as e:
+            logger.warning(f"Progress loop safe error: {e}")
+            continue
+
+    # === END LOOP ===
 
     stdout, stderr = await process.communicate()
     e_response = stderr.decode().strip()
@@ -182,6 +216,13 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     logger.info(f"FFmpeg stderr: {e_response}")
 
     del pid_list[0]
+
+    # Clean up watermark file
+    if watermark_file and os.path.exists(watermark_file):
+        try:
+            os.remove(watermark_file)
+        except Exception as e:
+            logger.error(f"Failed to delete watermark file: {e}")
 
     if os.path.exists(out_put_file_name):
         return out_put_file_name
