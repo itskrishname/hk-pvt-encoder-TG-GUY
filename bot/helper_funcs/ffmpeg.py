@@ -59,7 +59,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     # Prepare FFmpeg command components
     ffmpeg_cmd = [
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", progress,
-        "-hwaccel", "cuda", "-hwaccel_output_format", "cuda", "-c:v", "auto_cuvid", "-i", video_file
+        "-hwaccel", "cuda", "-hwaccel_output_format", "cuda", "-c:v", "cuda", "-i", video_file
     ]
 
     
@@ -217,12 +217,6 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
     del pid_list[0]
 
-    # Clean up watermark file
-    if watermark_file and os.path.exists(watermark_file):
-        try:
-            os.remove(watermark_file)
-        except Exception as e:
-            logger.error(f"Failed to delete watermark file: {e}")
 
     if os.path.exists(out_put_file_name):
         return out_put_file_name
