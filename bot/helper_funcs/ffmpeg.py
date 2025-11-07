@@ -30,12 +30,13 @@ from helper.database import db
 
 
 async def convert_video(video_file, output_directory, total_time, bot, message, chan_msg):
-    # Extract file name and extension
-    kk = video_file.split("/")[-1]
-    aa = kk.split(".")[-1]
-    out_put_file_name = kk.replace(f".{aa}", "[@Itsme123c].mkv")
+    """Asynchronously convert video with live progress updates to Telegram."""
+    # Extract file name
+    kk = os.path.basename(video_file)
+    ext = kk.split(".")[-1]
+    out_put_file_name = os.path.join(output_directory, kk.replace(f".{ext}", "[@Itsme123c].mkv"))
 
-    # Fetch settings from database
+    # === Fetch settings from DB ===
     try:
         crf = await db.get_crf()
         preset = await db.get_preset()
@@ -47,188 +48,179 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         watermark = await db.get_watermark()
         bits = await db.get_bits()
     except Exception as e:
-        logger.error(f"Failed to fetch settings from database: {e}")
-        await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
+        logger.error(f"DB fetch error: {e}")
+        await message.reply_text("<blockquote>Database error: Could not fetch encoding settings.</blockquote>")
         return None
 
-    # Prepare FFmpeg command components
+    # === Prepare FFmpeg base command ===
     ffmpeg_cmd = [
-        "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", "pipe:2",  # Use stderr for progress (Heroku-friendly)
+        "ffmpeg", "-hide_banner",
+        "-loglevel", "info",           # Keep stderr clean
+        "-progress", "pipe:1",          # Send progress to stdout (important!)
         "-i", video_file
     ]
 
-    if watermark is not None:
+    if watermark:
         ffmpeg_cmd.extend(["-i", watermark_file])
-        ffmpeg_cmd.extend(["-filter_complex", "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"])
+        ffmpeg_cmd.extend([
+            "-filter_complex",
+            "[1:v]scale=1000:-1[wm];"
+            "[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,"
+            "if(between(t,845,860),(W-w)*(t-12)/6,"
+            "if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,"
+            "scale=1920:1080,format=yuv420p10le"
+        ])
+                    
 
+    # === Video/audio settings ===
     ffmpeg_cmd.extend([
         "-c:v", video_codec,
         "-crf", str(crf),
+        "-preset", preset,
         "-s", resolution,
         "-c:a", audio_codec,
         "-b:a", audio_b,
-        "-preset", preset,
         "-x265-params", "bframes=8:psy-rd=1:ref=3:aq-mode=3:aq-strength=0.8:deblock=1,1:rc-lookahead=32"
     ])
-            
-    if video_bitrate is not None:
+
+    if video_bitrate:
         ffmpeg_cmd.extend(["-b:v", video_bitrate])
 
     if bits == "10":
         ffmpeg_cmd.extend(["-pix_fmt", "yuv420p10le"])
-        
+
     ffmpeg_cmd.extend([
-        "-map", "0", 
-        "-c:s", "copy", 
-        "-ac", "2", 
-        "-ab", audio_b, 
-        "-vbr", "2", 
-        "-level", "3.1", 
-        "-threads", "1"
+        "-map", "0",
+        "-c:s", "copy",
+        "-ac", "2",
+        "-level", "3.1",
+        "-threads", "1",
+        "-y",
+        out_put_file_name
     ])
 
-    logger.info(f"Input exists: {os.path.exists(video_file)}, Path: {video_file}")
-    logger.info(f"Output directory exists: {os.path.exists(output_directory)}, Path: {output_directory}")
+    # === Start subprocess ===
+    logger.info(f"Running FFmpeg: {' '.join(shlex.quote(x) for x in ffmpeg_cmd)}")
 
-    # Complete FFmpeg command
-    ffmpeg_cmd.extend([out_put_file_name, "-y"])
-    file_genertor_command = " ".join(shlex.quote(x) for x in ffmpeg_cmd)
-
-    logger.info(f"Running FFmpeg: {file_genertor_command}")
-
-    # Start FFmpeg process
-    COMPRESSION_START_TIME = time.time()
-    process = await asyncio.create_subprocess_shell(
-        file_genertor_command,
+    process = await asyncio.create_subprocess_exec(
+        *ffmpeg_cmd,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
     )
 
-    logger.info(f"ffmpeg_process: {process.pid}")
     pid_list.insert(0, process.pid)
-    status = os.path.join(output_directory, "status.json")
-    with open(status, 'r+') as f:
-        statusMsg = json.load(f)
-        statusMsg['pid'] = process.pid
-        statusMsg['message'] = message.id
-        f.seek(0)
-        json.dump(statusMsg, f, indent=2)
+    COMPRESSION_START_TIME = time.time()
+    logger.info(f"FFmpeg PID: {process.pid}")
 
-    # === BULLETPROOF PROGRESS LOOP (Heroku + Long Video Safe) ===
+    # === Progress monitoring ===
     isDone = False
     last_percentage = -1
     stuck_counter = 0
     elapsed_time = 0
     speed = 1.0
 
-    while process.returncode is None:
-        await asyncio.sleep(3)
+    while True:
+        if process.returncode is not None:
+            break
+
         try:
-            # Non-blocking read from stderr (progress pipe)
-            line = await asyncio.wait_for(process.stderr.readline(), timeout=2.0)
-            if line:
-                text = line.decode('utf-8', errors='ignore').strip()
-                if not text:
-                    continue
+            line = await asyncio.wait_for(process.stdout.readline(), timeout=3.0)
+            if not line:
+                continue
 
-                logger.debug(f"FFmpeg progress line: {text[:100]}...")  # Debug: Log first line
+            text = line.decode('utf-8', errors='ignore').strip()
+            if not text:
+                continue
 
-                # Parse key fields
-                time_match = re.search(r"out_time_ms=(\d+)", text)
-                speed_match = re.search(r"speed=([\d.]+)x", text)
-                progress_match = re.search(r"progress=(\w+)", text)
+            if not ("out_time_ms" in text or "speed=" in text or "progress=" in text):
+                continue  # skip unrelated lines
 
-                if time_match:
-                    elapsed_us = int(time_match.group(1))
-                    elapsed_time = elapsed_us / 1_000_000
-                if speed_match:
+            time_match = re.search(r"out_time_ms=(\d+)", text)
+            speed_match = re.search(r"speed=([\d.]+)x", text)
+            progress_match = re.search(r"progress=(\w+)", text)
+
+            if time_match:
+                elapsed_us = int(time_match.group(1))
+                elapsed_time = elapsed_us / 1_000_000
+            if speed_match:
+                try:
                     speed = float(speed_match.group(1))
-                if progress_match and progress_match.group(1) == "end":
-                    logger.info("FFmpeg finished normally")
-                    isDone = True
-                    break
+                except:
+                    pass
+            if progress_match and progress_match.group(1) == "end":
+                isDone = True
+                logger.info("FFmpeg finished normally.")
+                break
 
-                # Calculate percentage (cap at 99% to avoid 100% too early)
-                percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
+            # Calculate progress %
+            percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
 
-                # Only update if percentage changed or first time
-                if percentage > last_percentage or last_percentage == -1:
-                    last_percentage = percentage
-                    stuck_counter = 0
+            if percentage > last_percentage or last_percentage == -1:
+                last_percentage = percentage
+                stuck_counter = 0
 
-                    # ETA calculation
-                    remaining = max(0, (total_time - elapsed_time) / max(speed, 0.1))  # Avoid div/0
-                    ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
+                remaining = max(0, (total_time - elapsed_time) / max(speed, 0.1))
+                ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
 
-                    # Progress bar (10 blocks)
-                    filled_blocks = percentage // 10
-                    empty_blocks = 10 - filled_blocks
-                    progress_bar = (
-                        f"[{''.join([FINISHED_PROGRESS_STR] * filled_blocks)}"
-                        f"{''.join([UN_FINISHED_PROGRESS_STR] * empty_blocks)}]"
-                    )
+                filled_blocks = percentage // 10
+                empty_blocks = 10 - filled_blocks
+                progress_bar = f"[{FINISHED_PROGRESS_STR * filled_blocks}{UN_FINISHED_PROGRESS_STR * empty_blocks}]"
 
-                    # Status message
-                    status_text = (
-                        f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
-                        f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n'
-                        f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n\n'
-                        f'♻️ <b>ᴘʀᴏɢʀᴇss:</b> {percentage}%\n{progress_bar}\n'
-                    )
+                status_text = (
+                    f"<b>⚡ Encoding in Progress...</b>\n\n"
+                    f"🕒 <b>Time Left:</b> {ETA}\n"
+                    f"⚙️ <b>Speed:</b> {speed:.2f}x\n"
+                    f"📊 <b>Progress:</b> {percentage}%\n{progress_bar}"
+                )
 
-                    # Update Telegram messages
-                    try:
-                        await message.edit_text(
-                            text=status_text,
-                            reply_markup=InlineKeyboardMarkup(
-                                [[InlineKeyboardButton('❌ Cancel ❌', callback_data='fuckingdo')]]
-                            )
+                try:
+                    await message.edit_text(
+                        text=status_text,
+                        reply_markup=InlineKeyboardMarkup(
+                            [[InlineKeyboardButton("❌ Cancel", callback_data="fuckingdo")]]
                         )
-                    except Exception as e:
-                        logger.warning(f"Failed to edit user message: {e}")
+                    )
+                except Exception as e:
+                    logger.warning(f"User msg edit fail: {e}")
 
-                    try:
-                        await chan_msg.edit_text(text=status_text)
-                    except Exception as e:
-                        logger.warning(f"Failed to edit channel message: {e}")
+                try:
+                    await chan_msg.edit_text(text=status_text)
+                except Exception as e:
+                    logger.warning(f"Channel msg edit fail: {e}")
 
-                    logger.debug(f"Updated progress: {percentage}% | Speed: {speed:.2f}x | ETA: {ETA}")
-
-                # Stuck detection (if no progress for 30s)
-                stuck_counter += 1
-                if stuck_counter > 10:
-                    logger.warning(f"Stuck at {percentage}% for 30s, continuing...")
+            stuck_counter += 1
+            if stuck_counter > 10:
+                logger.warning(f"Progress stuck at {percentage}% for 30s...")
 
         except asyncio.TimeoutError:
-            # No new progress line (normal for short intervals)
-            pass
+            continue
         except Exception as e:
-            logger.warning(f"Progress loop safe error: {e}")
+            logger.warning(f"Progress loop error: {e}")
             continue
 
-    # Wait for process to finish if not already
+    # === Wait for completion ===
     if not isDone:
         try:
-            await asyncio.wait_for(process.wait(), timeout=30.0)
+            await asyncio.wait_for(process.wait(), timeout=20.0)
         except asyncio.TimeoutError:
-            logger.error("FFmpeg timed out after 30s post-loop")
+            logger.error("FFmpeg timed out, terminating.")
             process.terminate()
 
     stdout, stderr = await process.communicate()
-    e_response = stderr.decode('utf-8', errors='ignore').strip()
-    t_response = stdout.decode('utf-8', errors='ignore').strip()
-    logger.info(f"FFmpeg stdout: {t_response}")
-    logger.info(f"FFmpeg stderr: {e_response}")
+    logger.info(f"FFmpeg stdout: {stdout.decode(errors='ignore')[:300]}")
+    logger.info(f"FFmpeg stderr: {stderr.decode(errors='ignore')[:300]}")
 
-    del pid_list[0]
+    if pid_list:
+        pid_list.pop(0)
 
 
+    # === Final output check ===
     if os.path.exists(out_put_file_name):
-        logger.info(f"Encoding successful: {out_put_file_name}")
+        logger.info(f"Encoding successful → {out_put_file_name}")
         return out_put_file_name
     else:
-        logger.error("FFmpeg output file not created")
-        await message.reply_text("<blockquote>Error: Encoding failed. No output file created.</blockquote>")
+        await message.reply_text("<blockquote>Error: Encoding failed, no output file created.</blockquote>")
+        logger.error("FFmpeg output file missing.")
         return None
 
 
