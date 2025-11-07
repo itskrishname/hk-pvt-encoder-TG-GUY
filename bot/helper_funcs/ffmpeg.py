@@ -33,12 +33,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     # Extract file name and extension
     kk = video_file.split("/")[-1]
     aa = kk.split(".")[-1]
-    out_put_file_name = kk.replace("[@Itsme123c]", f".{aa}")
-    progress = os.path.join(output_directory, "progress.txt")
-
-    # Clear progress file
-    with open(progress, 'w') as f:
-        pass
+    out_put_file_name = kk.replace(f".{aa}", "[@Itsme123c].mkv")
 
     # Fetch settings from database
     try:
@@ -58,13 +53,12 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
     # Prepare FFmpeg command components
     ffmpeg_cmd = [
-        "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", progress,
+        "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", "pipe:2",  # Use stderr for progress (Heroku-friendly)
         "-i", video_file
     ]
 
-    
     if watermark is not None:
-        ffmpeg_cmd.extend(["-i", watermark])
+        ffmpeg_cmd.extend(["-i", watermark_file])
         ffmpeg_cmd.extend(["-filter_complex", "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"])
 
     ffmpeg_cmd.extend([
@@ -77,11 +71,9 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-x265-params", "bframes=8:psy-rd=1:ref=3:aq-mode=3:aq-strength=0.8:deblock=1,1:rc-lookahead=32"
     ])
             
-    # Add video bitrate if not None
     if video_bitrate is not None:
         ffmpeg_cmd.extend(["-b:v", video_bitrate])
 
-    # Add bit depth if 10-bit
     if bits == "10":
         ffmpeg_cmd.extend(["-pix_fmt", "yuv420p10le"])
         
@@ -94,6 +86,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-level", "3.1", 
         "-threads", "1"
     ])
+
     logger.info(f"Input exists: {os.path.exists(video_file)}, Path: {video_file}")
     logger.info(f"Output directory exists: {os.path.exists(output_directory)}, Path: {output_directory}")
 
@@ -121,97 +114,109 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         f.seek(0)
         json.dump(statusMsg, f, indent=2)
 
-    # === HEROKU-PROOF PROGRESS LOOP ===
+    # === BULLETPROOF PROGRESS LOOP (Heroku + Long Video Safe) ===
     isDone = False
     last_percentage = -1
     stuck_counter = 0
+    elapsed_time = 0
     speed = 1.0
 
     while process.returncode is None:
         await asyncio.sleep(3)
         try:
-            if not os.path.exists(progress):
+            # Non-blocking read from stderr (progress pipe)
+            line = await asyncio.wait_for(process.stderr.readline(), timeout=2.0)
+            if line:
+                text = line.decode('utf-8', errors='ignore').strip()
+                if not text:
+                    continue
+
+                logger.debug(f"FFmpeg progress line: {text[:100]}...")  # Debug: Log first line
+
+                # Parse key fields
+                time_match = re.search(r"out_time_ms=(\d+)", text)
+                speed_match = re.search(r"speed=([\d.]+)x", text)
+                progress_match = re.search(r"progress=(\w+)", text)
+
+                if time_match:
+                    elapsed_us = int(time_match.group(1))
+                    elapsed_time = elapsed_us / 1_000_000
+                if speed_match:
+                    speed = float(speed_match.group(1))
+                if progress_match and progress_match.group(1) == "end":
+                    logger.info("FFmpeg finished normally")
+                    isDone = True
+                    break
+
+                # Calculate percentage (cap at 99% to avoid 100% too early)
+                percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
+
+                # Only update if percentage changed or first time
+                if percentage > last_percentage or last_percentage == -1:
+                    last_percentage = percentage
+                    stuck_counter = 0
+
+                    # ETA calculation
+                    remaining = max(0, (total_time - elapsed_time) / max(speed, 0.1))  # Avoid div/0
+                    ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
+
+                    # Progress bar (10 blocks)
+                    filled_blocks = percentage // 10
+                    empty_blocks = 10 - filled_blocks
+                    progress_bar = (
+                        f"[{''.join([FINISHED_PROGRESS_STR] * filled_blocks)}"
+                        f"{''.join([UN_FINISHED_PROGRESS_STR] * empty_blocks)}]"
+                    )
+
+                    # Status message
+                    status_text = (
+                        f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
+                        f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n'
+                        f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n\n'
+                        f'♻️ <b>ᴘʀᴏɢʀᴇss:</b> {percentage}%\n{progress_bar}\n'
+                    )
+
+                    # Update Telegram messages
+                    try:
+                        await message.edit_text(
+                            text=status_text,
+                            reply_markup=InlineKeyboardMarkup(
+                                [[InlineKeyboardButton('❌ Cancel ❌', callback_data='fuckingdo')]]
+                            )
+                        )
+                    except Exception as e:
+                        logger.warning(f"Failed to edit user message: {e}")
+
+                    try:
+                        await chan_msg.edit_text(text=status_text)
+                    except Exception as e:
+                        logger.warning(f"Failed to edit channel message: {e}")
+
+                    logger.debug(f"Updated progress: {percentage}% | Speed: {speed:.2f}x | ETA: {ETA}")
+
+                # Stuck detection (if no progress for 30s)
                 stuck_counter += 1
                 if stuck_counter > 10:
-                    logger.warning("progress.txt missing for 30s, continuing...")
-                continue
+                    logger.warning(f"Stuck at {percentage}% for 30s, continuing...")
 
-            with open(progress, 'r', encoding='utf-8', errors='ignore') as file:
-                text = file.read().strip()
-
-            if not text:
-                continue
-
-            # Parse FFmpeg progress
-            frame_match = re.search(r"frame=(\d+)", text)
-            time_match = re.search(r"out_time_ms=(\d+)", text)
-            progress_match = re.search(r"progress=(\w+)", text)
-            speed_match = re.search(r"speed=([\d.]+)x", text)
-
-            if time_match:
-                elapsed_us = int(time_match.group(1))
-                elapsed_time = elapsed_us / 1_000_000
-            else:
-                elapsed_time = 0
-
-            if speed_match:
-                speed = float(speed_match.group(1))
-            else:
-                speed = 1.0
-
-            if progress_match and progress_match.group(1) == "end":
-                logger.info("FFmpeg reported 'progress=end'")
-                isDone = True
-                break
-
-            # Calculate percentage (cap at 99%)
-            percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
-
-            if percentage > last_percentage:
-                last_percentage = percentage
-                stuck_counter = 0
-
-                # ETA
-                remaining = (total_time - elapsed_time) / speed if speed > 0 else 0
-                ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
-
-                # Progress bar
-                filled = percentage // 10
-                empty = 10 - filled
-                progress_bar = f"[{''.join([FINISHED_PROGRESS_STR] * filled)}{''.join([UN_FINISHED_PROGRESS_STR] * empty)}]"
-
-                stats = (
-                    f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
-                    f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n'
-                    f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n\n'
-                    f'♻️ <b>ᴘʀᴏɢʀᴇss:</b> {percentage}%\n{progress_bar}\n'
-                )
-
-                try:
-                    await message.edit_text(
-                        text=stats,
-                        reply_markup=InlineKeyboardMarkup(
-                            [[InlineKeyboardButton('❌ Cancel ❌', callback_data='fuckingdo')]]
-                        )
-                    )
-                except:
-                    pass
-                try:
-                    await chan_msg.edit_text(text=stats)
-                except:
-                    pass
-
-                logger.debug(f"Progress: {percentage}% | Speed: {speed:.2f}x | ETA: {ETA}")
-
+        except asyncio.TimeoutError:
+            # No new progress line (normal for short intervals)
+            pass
         except Exception as e:
             logger.warning(f"Progress loop safe error: {e}")
             continue
 
-    # === END LOOP ===
+    # Wait for process to finish if not already
+    if not isDone:
+        try:
+            await asyncio.wait_for(process.wait(), timeout=30.0)
+        except asyncio.TimeoutError:
+            logger.error("FFmpeg timed out after 30s post-loop")
+            process.terminate()
 
     stdout, stderr = await process.communicate()
-    e_response = stderr.decode().strip()
-    t_response = stdout.decode().strip()
+    e_response = stderr.decode('utf-8', errors='ignore').strip()
+    t_response = stdout.decode('utf-8', errors='ignore').strip()
     logger.info(f"FFmpeg stdout: {t_response}")
     logger.info(f"FFmpeg stderr: {e_response}")
 
@@ -219,11 +224,13 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
 
     if os.path.exists(out_put_file_name):
+        logger.info(f"Encoding successful: {out_put_file_name}")
         return out_put_file_name
     else:
         logger.error("FFmpeg output file not created")
         await message.reply_text("<blockquote>Error: Encoding failed. No output file created.</blockquote>")
         return None
+
 
 async def media_info(saved_file_path):
   process = subprocess.Popen(
