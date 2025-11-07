@@ -59,7 +59,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     # Prepare FFmpeg command components
     ffmpeg_cmd = [
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", progress,
-        "-hwaccel", "cuda", "-hwaccel_output_format", "cuda", "-i", video_file
+        "-i", video_file
     ]
 
     
