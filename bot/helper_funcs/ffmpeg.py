@@ -56,7 +56,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     # === Prepare FFmpeg base command ===
     ffmpeg_cmd = [
         "ffmpeg", "-hide_banner",
-        "-loglevel", "info",           # Keep stderr clean
+        "-loglevel", "error",           # Keep stderr clean
         "-progress", "pipe:1",          # Send progress to stdout (important!)
         "-i", video_file
     ]
