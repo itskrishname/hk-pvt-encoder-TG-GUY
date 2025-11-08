@@ -118,6 +118,8 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     stuck_counter = 0
     elapsed_time = 0
     speed = 1.0
+    last_edit_time = 0
+    
 
     while True:
         if process.returncode is not None:
@@ -152,11 +154,13 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
                 logger.info("FFmpeg finished normally.")
                 break
 
-            # Calculate progress %
             percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
 
-            if percentage > last_percentage or last_percentage == -1:
+            # Throttle Telegram updates to every 5 seconds
+            now = time.time()
+            if (now - last_edit_time >= EDIT_INTERVAL) and (percentage > last_percentage or last_percentage == -1):
                 last_percentage = percentage
+                last_edit_time = now
                 stuck_counter = 0
 
                 remaining = max(0, (total_time - elapsed_time) / max(speed, 0.1))
