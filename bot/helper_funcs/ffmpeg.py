@@ -95,7 +95,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-c:s", "copy",
         "-ac", "2",
         "-level", "3.1",
-        "-threads", "1",
+        "-threads", "4",
         "-y",
         out_put_file_name
     ])
