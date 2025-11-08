@@ -24,6 +24,7 @@ from bot import (
     FINISHED_PROGRESS_STR,
     UN_FINISHED_PROGRESS_STR,
     DOWNLOAD_LOCATION,
+    EDIT_INTERVAL,
     pid_list
 )
 from helper.database import db
