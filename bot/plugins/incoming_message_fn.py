@@ -67,7 +67,6 @@ async def incoming_compress_message_f(update):
     d_start = time.time()
     status = os.path.join(DOWNLOAD_LOCATION, "status.json")
 
-    
     sent_message = await bot.send_message(
         chat_id=update.chat.id,
         text=Localisation.DOWNLOAD_START,
@@ -81,17 +80,15 @@ async def incoming_compress_message_f(update):
     now = f"\n{ist} (GMT+05:30)\n{bst} (GMT+06:00)"
     download_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**𝙱𝚘𝚝 𝙱𝚎𝚌𝚘𝚖𝚎 𝙱𝚞𝚜𝚢 𝙽𝚘𝚠...⛈**{now}</blockquote>"
+        text=f"<blockquote>**𝙱𝚘𝚝 𝙱𝚎𝚌𝚘𝚖𝚎 𝙱𝚞𝚜𝚢 𝙽𝚘𝚠...**{now}</blockquote>"
     )
 
-    
     file_name = update.video.file_name if update.video else update.document.file_name
     if not file_name:
-        file_name = f"{update.id}.mkv"  # Fallback if no file name
+        file_name = f"{update.id}.mkv"
     extension = file_name.split('.')[-1] if '.' in file_name else 'mkv'
     download_path = os.path.join(DOWNLOAD_LOCATION, file_name)
 
-    
     try:
         video = await bot.download_media(
             message=update,
@@ -100,40 +97,29 @@ async def incoming_compress_message_f(update):
             progress_args=(bot, Localisation.DOWNLOAD_START, sent_message, d_start)
         )
         if not video or not os.path.exists(video):
-            await sent_message.edit_text("Dᴏᴡɴʟᴏᴀᴅ Sᴛᴏᴘᴘᴇᴅ 🛑")
-            await bot.send_message(
-                chat_id=LOG_CHANNEL,
-                text=f"<blockquote>**𝙵𝚒𝚕𝚎 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝚂𝚝𝚘𝚙𝚙𝚎𝚍{now}</blockquote>"
-            )
+            await sent_message.edit_text("Download Stopped")
+            await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Stopped**{now}</blockquote>")
             await download_start.delete()
             return
     except Exception as e:
         LOGGER.error(f"Download failed: {e}")
         await sent_message.edit_text(f"<blockquote>Error: {str(e)}</blockquote>")
-        await bot.send_message(
-            chat_id=LOG_CHANNEL,
-            text=f"<blockquote>**𝙵𝚒𝚕𝚎 𝙳𝚊𝚠𝚗𝚕𝚘𝚊𝚍 𝙴𝚛𝚛𝚘𝚛!{now}</blockquote>"
-        )
+        await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Error!**{now}</blockquote>")
         await download_start.delete()
         return
 
     await sent_message.edit_text(Localisation.SAVED_RECVD_DOC_FILE)
 
-    
     duration, bitrate = await media_info(video)
     if duration is None or bitrate is None:
         LOGGER.error("Failed to get video metadata")
-        await sent_message.edit_text("⚠️ Gᴇᴛᴛɪɴɢ Vɪᴅᴇᴏ Mᴇᴛᴀ Dᴀᴛᴀ Fᴀɪʟᴇᴅ ⚠️")
-        await bot.send_message(
-            chat_id=LOG_CHANNEL,
-            text=f"<blockquote>**𝙵𝚒𝚕𝚎 𝙳𝚘𝚠𝚗𝚕𝚘𝚊𝚍 𝙵𝚊𝚒𝚕𝚎𝚍{now}</blockquote>"
-        )
+        await sent_message.edit_text("Getting Video Meta Data Failed")
+        await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Failed**{now}</blockquote>")
         await download_start.delete()
         if os.path.exists(video):
             os.remove(video)
         return
 
-    # Take screenshot for thumbnail
     thumb_image_path = await take_screen_shot(
         video,
         os.path.dirname(os.path.abspath(video)),
@@ -143,11 +129,10 @@ async def incoming_compress_message_f(update):
     await download_start.delete()
     compress_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**𝙴𝚗𝚌𝚘𝚍𝚒𝚗𝚐 𝚅𝚒𝚍𝚎𝚘...⚙**{now}</blockquote>"
+        text=f"<blockquote>**Encoding Video...**{now}</blockquote>"
     )
     await sent_message.edit_text(Localisation.COMPRESS_START)
 
-    # Write status file
     with open(status, 'w') as f:
         json.dump({"running": True, "message": sent_message.id}, f, indent=2)
 
@@ -163,12 +148,9 @@ async def incoming_compress_message_f(update):
 
     compressed_time = TimeFormatter((time.time() - c_start) * 1000)
     if not encoded_file or not os.path.exists(encoded_file):
-        LOGGER.error("Compression failed, no output file")
-        await sent_message.edit_text("⚠️ Cᴏᴍᴘʀᴇꜱꜱɪᴏɴ Fᴀɪʟᴇᴅ ⚠️")
-        await bot.send_message(
-            chat_id=LOG_CHANNEL,
-            text=f"<blockquote>**𝚅𝚒𝚍𝚎𝚘 𝙲𝚘𝚖𝚙𝚛𝚎𝚜𝚜𝚒𝚘𝚗 𝚏𝚊𝚒𝚕𝚎𝚍{now}</blockquote>"
-        )
+        LOGGER.error("Compression failed")
+        await sent_message.edit_text("Compression Failed")
+        await bot.send_message(LOG_CHANNEL, f"<blockquote>**Video Compression Failed**{now}</blockquote>")
         await compress_start.delete()
         if os.path.exists(video):
             os.remove(video)
@@ -178,43 +160,41 @@ async def incoming_compress_message_f(update):
     await compress_start.delete()
     upload_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**𝚄𝚙𝚕𝚘𝚊𝚍𝚒𝚗𝚐 𝚅𝚒𝚍𝚎𝚘 𝚘𝚗 𝚃𝙶...📥**{now}</blockquote>"
+        text=f"<blockquote>**Uploading Video on TG...**{now}</blockquote>"
     )
     await sent_message.edit_text(Localisation.UPLOAD_START)
 
-    # Use input video's caption or default
     caption = update.caption if update.caption else "Encoded by @Animes_Guy"
-    
-    try:
-        upload = await bot.send_document(
-            chat_id=update.chat.id,
-            document=encoded_file,
-            caption=caption,
-            force_document=True,
-            thumb=thumb_image_path if os.path.exists(thumb_image_path) else "thumb.jpg",
-            reply_to_message_id=update.id,
-            progress=progress_for_pyrogram,
-            progress_args=(bot, Localisation.UPLOAD_START, sent_message, u_start)
-        )
-        if not upload:
-            await sent_message.edit_text("Uᴘʟᴏᴀᴅ Sᴛᴏᴘᴘᴇᴅ 🛑")
-            await bot.send_message(
-                chat_id=LOG_CHANNEL,
-                text=f"<blockquote>**𝙵𝚒𝚕𝚎 𝚄𝚙𝚕𝚘𝚊𝚍 𝚜𝚝𝚘𝚙𝚙𝚎𝚍{now}</blockquote>"
+
+    # === AUTO-RETRY UPLOAD (3 TIMES) ===
+    max_retries = 3
+    uploaded = False
+    for attempt in range(1, max_retries + 1):
+        try:
+            await sent_message.edit_text(f"{Localisation.UPLOAD_START}\n\nRetry {attempt}/{max_retries}...")
+            upload = await bot.send_document(
+                chat_id=update.chat.id,
+                document=encoded_file,
+                caption=caption,
+                force_document=True,
+                thumb=thumb_image_path if os.path.exists(thumb_image_path) else "thumb.jpg",
+                reply_to_message_id=update.id,
+                progress=progress_for_pyrogram,
+                progress_args=(bot, Localisation.UPLOAD_START, sent_message, u_start)
             )
-            await upload_start.delete()
-            if os.path.exists(video):
-                os.remove(video)
-            if os.path.exists(encoded_file):
-                os.remove(encoded_file)
-            return
-    except Exception as e:
-        LOGGER.error(f"Upload failed: {e}")
-        await sent_message.edit_text(f"<blockquote>Error: Upload failed - {str(e)}</blockquote>")
-        await bot.send_message(
-            chat_id=LOG_CHANNEL,
-            text=f"<blockquote>**𝙵𝚒𝚕𝚎 𝚄𝚙𝚕𝚘𝚊𝚍 𝙴𝚛𝚛𝚘𝚛{now}</blockquote>"
-        )
+            if upload:
+                uploaded = True
+                break
+        except Exception as e:
+            LOGGER.error(f"Upload attempt {attempt} failed: {e}")
+            if attempt < max_retries:
+                await asyncio.sleep(5 * attempt)  # 5s, 10s, 20s
+                await bot.send_message(LOG_CHANNEL, f"<blockquote>**Upload Retry {attempt}/{max_retries}...**{now}</blockquote>")
+            else:
+                await sent_message.edit_text(f"<blockquote>Upload Failed After {max_retries} Attempts\nError: {str(e)}</blockquote>")
+                await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Upload Failed After {max_retries} Tries**{now}</blockquote>")
+
+    if not uploaded:
         await upload_start.delete()
         if os.path.exists(video):
             os.remove(video)
@@ -222,17 +202,22 @@ async def incoming_compress_message_f(update):
             os.remove(encoded_file)
         return
 
-    # Finalize
+    # === SUCCESS ===
     uploaded_time = TimeFormatter((time.time() - u_start) * 1000)
     await sent_message.delete()
     await upload_start.delete()
     await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**𝙴𝙽𝙲𝙾𝙳𝙴𝙳 𝚄𝚙𝚕𝚘𝚊𝚍 𝙳𝚘𝚗𝚎{now}</blockquote>"
+        text=f"<blockquote>**ENCODED UPLOAD Done**{now}</blockquote>"
     )
 
+    try:
+        await upload.edit_caption(
+            caption=f"{caption}\n\n🕛 <b>Compressed in:</b> {compressed_time}\n📤 <b>Uploaded in:</b> {uploaded_time}"
+        )
+    except:
+        pass
 
-    # Cleanup
     if os.path.exists(video):
         os.remove(video)
     if os.path.exists(encoded_file):
