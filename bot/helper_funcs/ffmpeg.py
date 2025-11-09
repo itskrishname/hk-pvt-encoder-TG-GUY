@@ -29,15 +29,13 @@ from bot import (
 )
 from helper.database import db
 
-
 async def convert_video(video_file, output_directory, total_time, bot, message, chan_msg):
-    """Asynchronously convert video with live progress updates to Telegram."""
-    # Extract file name
-    kk = os.path.basename(video_file)
-    ext = kk.split(".")[-1]
-    out_put_file_name = os.path.join(output_directory, kk.replace(f".{ext}", "[@Itsme123c].mkv"))
+    # Extract file name and extension
+    kk = video_file.split("/")[-1]
+    aa = kk.split(".")[-1]
+    out_put_file_name = kk.replace(f".{aa}", "[@Itsme123c].mkv")
 
-    # === Fetch settings from DB ===
+    # Fetch settings from database
     try:
         crf = await db.get_crf()
         preset = await db.get_preset()
@@ -49,15 +47,12 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         watermark = await db.get_watermark()
         bits = await db.get_bits()
     except Exception as e:
-        logger.error(f"DB fetch error: {e}")
-        await message.reply_text("<blockquote>Database error: Could not fetch encoding settings.</blockquote>")
+        logger.error(f"Failed to fetch settings from database: {e}")
+        await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
         return None
 
-    # === Prepare FFmpeg base command ===
     ffmpeg_cmd = [
-        "ffmpeg", "-hide_banner",
-        "-loglevel", "error",           # Keep stderr clean
-        "-progress", "pipe:1",          # Send progress to stdout (important!)
+        "ffmpeg", "-hide_banner", "-loglevel", "info", "-progress", "pipe:2",
         "-i", video_file
     ]
 
@@ -65,22 +60,16 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         ffmpeg_cmd.extend(["-i", watermark_file])
         ffmpeg_cmd.extend([
             "-filter_complex",
-            "[1:v]scale=1000:-1[wm];"
-            "[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,"
-            "if(between(t,845,860),(W-w)*(t-12)/6,"
-            "if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,"
-            "scale=1920:1080,format=yuv420p10le"
+            "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"
         ])
-                    
-
-    # === Video/audio settings ===
+    
     ffmpeg_cmd.extend([
         "-c:v", video_codec,
         "-crf", str(crf),
-        "-preset", preset,
         "-s", resolution,
         "-c:a", audio_codec,
         "-b:a", audio_b,
+        "-preset", preset,
         "-x265-params", "bframes=8:psy-rd=1:ref=3:aq-mode=3:aq-strength=0.8:deblock=1,1:rc-lookahead=32"
     ])
 
@@ -94,140 +83,113 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-map", "0",
         "-c:s", "copy",
         "-ac", "2",
-        "-level", "3.1",
-        "-threads", "4",
-        "-y",
-        out_put_file_name
+        os.path.join(output_directory, out_put_file_name),
+        "-y"
     ])
 
-    # === Start subprocess ===
-    logger.info(f"Running FFmpeg: {' '.join(shlex.quote(x) for x in ffmpeg_cmd)}")
+    command = " ".join(shlex.quote(x) for x in ffmpeg_cmd)
+    logger.info(f"Running FFmpeg: {command}")
 
-    process = await asyncio.create_subprocess_exec(
-        *ffmpeg_cmd,
+    
+    start_time = time.time()
+    process = await asyncio.create_subprocess_shell(
+        command,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE
     )
 
-    pid_list.insert(0, process.pid)
-    COMPRESSION_START_TIME = time.time()
-    logger.info(f"FFmpeg PID: {process.pid}")
-
-    # === Progress monitoring ===
-    isDone = False
     last_percentage = -1
+    last_update_time = 0
     stuck_counter = 0
-    elapsed_time = 0
     speed = 1.0
-    last_edit_time = 0
-    
+    elapsed_time = 0
+    is_done = False
 
+    logger.info(f"ffmpeg_process PID: {process.pid}")
+
+    # === Progress Loop ===
     while True:
-        if process.returncode is not None:
+        line = await process.stderr.readline()
+        if not line:
+            break
+        text = line.decode(errors='ignore').strip()
+        if not text:
+            continue
+
+        
+        time_match = re.search(r"out_time_ms=(\d+)", text)
+        speed_match = re.search(r"speed=([\d.]+)x", text)
+        progress_match = re.search(r"progress=(\w+)", text)
+
+        if time_match:
+            elapsed_us = int(time_match.group(1))
+            elapsed_time = elapsed_us / 1_000_000
+        if speed_match:
+            speed = float(speed_match.group(1))
+        if progress_match and progress_match.group(1) == "end":
+            is_done = True
             break
 
-        try:
-            line = await asyncio.wait_for(process.stdout.readline(), timeout=3.0)
-            if not line:
-                continue
+        percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
 
-            text = line.decode('utf-8', errors='ignore').strip()
-            if not text:
-                continue
+        # Calculate elapsed & ETA
+        elapsed_real = int(time.time() - start_time)
+        elapsed_str = time.strftime("%M:%S", time.gmtime(elapsed_real))
+        if percentage > 0:
+            estimated_total_time = elapsed_real / (percentage / 100)
+            eta = max(0, estimated_total_time - elapsed_real)
+            eta_str = time.strftime("%M:%S", time.gmtime(eta))
+        else:
+            eta_str = "--:--"
 
-            if not ("out_time_ms" in text or "speed=" in text or "progress=" in text):
-                continue  # skip unrelated lines
+        # Update progress message every 5 seconds
+        if percentage != last_percentage and (time.time() - last_update_time > EDIT_INTERVAL):
+            last_percentage = percentage
+            last_update_time = time.time()
 
-            time_match = re.search(r"out_time_ms=(\d+)", text)
-            speed_match = re.search(r"speed=([\d.]+)x", text)
-            progress_match = re.search(r"progress=(\w+)", text)
+            filled = percentage // 10
+            bar = f"[{FINISHED_PROGRESS_STR * filled}{UN_FINISHED_PROGRESS_STR * (10 - filled)}]"
 
-            if time_match:
-                elapsed_us = int(time_match.group(1))
-                elapsed_time = elapsed_us / 1_000_000
-            if speed_match:
-                try:
-                    speed = float(speed_match.group(1))
-                except:
-                    pass
-            if progress_match and progress_match.group(1) == "end":
-                isDone = True
-                logger.info("FFmpeg finished normally.")
-                break
+            status_text = (
+                f"<b>⚡ Encoding In Progress</b>\n\n"
+                f"🎞️ <b>Progress:</b> {percentage}%\n{bar}\n"
+                f"⏱️ <b>Elapsed:</b> {elapsed_str}\n"
+                f"⌛ <b>ETA:</b> {eta_str}\n"
+                f"🚀 <b>Speed:</b> {speed:.2f}x"
+            )
 
-            percentage = min(99, math.floor(elapsed_time * 100 / total_time)) if total_time > 0 else 0
-
-            # Throttle Telegram updates to every 5 seconds
-            now = time.time()
-            if (now - last_edit_time >= EDIT_INTERVAL) and (percentage > last_percentage or last_percentage == -1):
-                last_percentage = percentage
-                last_edit_time = now
-                stuck_counter = 0
-
-                remaining = max(0, (total_time - elapsed_time) / max(speed, 0.1))
-                ETA = TimeFormatter(remaining * 1000) if remaining > 0 else "-"
-
-                filled_blocks = percentage // 10
-                empty_blocks = 10 - filled_blocks
-                progress_bar = f"[{FINISHED_PROGRESS_STR * filled_blocks}{UN_FINISHED_PROGRESS_STR * empty_blocks}]"
-
-                status_text = (
-                    f"<b>⚡ Encoding in Progress...</b>\n\n"
-                    f"🕒 <b>Time Left:</b> {ETA}\n"
-                    f"⚙️ <b>Speed:</b> {speed:.2f}x\n"
-                    f"📊 <b>Progress:</b> {percentage}%\n{progress_bar}"
-                )
-
-                try:
-                    await message.edit_text(
-                        text=status_text,
-                        reply_markup=InlineKeyboardMarkup(
-                            [[InlineKeyboardButton("❌ Cancel", callback_data="fuckingdo")]]
-                        )
+            try:
+                await message.edit_text(
+                    text=status_text,
+                    reply_markup=InlineKeyboardMarkup(
+                        [[InlineKeyboardButton('❌ Cancel', callback_data='cancel_encoding')]]
                     )
-                except Exception as e:
-                    logger.warning(f"User msg edit fail: {e}")
+                )
+            except Exception:
+                pass
 
-                try:
-                    await chan_msg.edit_text(text=status_text)
-                except Exception as e:
-                    logger.warning(f"Channel msg edit fail: {e}")
+            try:
+                await chan_msg.edit_text(text=status_text)
+            except Exception:
+                pass
 
-            stuck_counter += 1
-            if stuck_counter > 10:
-                logger.warning(f"Progress stuck at {percentage}% for 30s...")
+        stuck_counter += 1
+        if stuck_counter > 20:
+            logger.warning(f"Progress stuck at {percentage}% for >60s.")
+            stuck_counter = 0
 
-        except asyncio.TimeoutError:
-            continue
-        except Exception as e:
-            logger.warning(f"Progress loop error: {e}")
-            continue
+    await process.wait()
 
-    # === Wait for completion ===
-    if not isDone:
-        try:
-            await asyncio.wait_for(process.wait(), timeout=20.0)
-        except asyncio.TimeoutError:
-            logger.error("FFmpeg timed out, terminating.")
-            process.terminate()
-
-    stdout, stderr = await process.communicate()
-    logger.info(f"FFmpeg stdout: {stdout.decode(errors='ignore')[:300]}")
-    logger.info(f"FFmpeg stderr: {stderr.decode(errors='ignore')[:300]}")
-
-    if pid_list:
-        pid_list.pop(0)
-
-
-    # === Final output check ===
-    if os.path.exists(out_put_file_name):
-        logger.info(f"Encoding successful → {out_put_file_name}")
-        return out_put_file_name
+    output_path = os.path.join(output_directory, out_put_file_name)
+    if os.path.exists(output_path):
+        logger.info(f"✅ Encoding successful: {output_path}")
+        total_elapsed = int(time.time() - start_time)
+        await message.reply_text(f"<b>✅ Encoding completed!</b>\n🕒 Time Taken: {TimeFormatter(total_elapsed * 1000)}")
+        return output_path
     else:
-        await message.reply_text("<blockquote>Error: Encoding failed, no output file created.</blockquote>")
-        logger.error("FFmpeg output file missing.")
+        logger.error("FFmpeg output not created.")
+        await message.reply_text("<blockquote>Error: Encoding failed. No output file created.</blockquote>")
         return None
-
 
 async def media_info(saved_file_path):
   process = subprocess.Popen(
