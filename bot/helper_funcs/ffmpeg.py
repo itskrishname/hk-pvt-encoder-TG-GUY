@@ -120,10 +120,14 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     last_percentage = -1
     stuck_counter = 0
 
+    init_progress_str = "♻️<b>ᴘʀᴏɢʀᴇss:</b> 0%\n[{0}{1}]".format(
+        ''.join([FINISHED_PROGRESS_STR for i in range(math.floor(0 / 10))]),
+        ''.join([UN_FINISHED_PROGRESS_STR for i in range(10 - math.floor(0 / 10))])
+    )
     init_stats = (
         f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴɪᴛɪᴀʟɪᴢɪɴɢ...</b></p>\n\n'
         f'⏳ FFmpeg warming up (first 10-30s normal)...\n\n'
-        f'♻️ <b>ᴘʀᴏɢʀᴇss:</b> 0%\n[{'█' * 0 + '░' * 10}]\n'
+        f'{init_progress_str}\n'
     )
     try:
         await message.edit_text(
