@@ -215,7 +215,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         percentage = min(100, percentage)
 
         # Update only if changed (your original logic + initial force)
-        if percentage > last_percentage or last_percentage == -1:
+        if percentage != last_percentage:
             last_percentage = percentage
             stuck_counter = 0
 
