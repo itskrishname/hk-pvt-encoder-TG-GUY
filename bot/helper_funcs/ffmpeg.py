@@ -30,9 +30,10 @@ from bot import (
 from helper.database import db
 
 async def convert_video(video_file, output_directory, total_time, bot, message, chan_msg):
+    # Extract file name and extension
     kk = video_file.split("/")[-1]
     aa = kk.split(".")[-1]
-    out_put_file_name = kk.replace(f".{aa}", "[@Animes_Guy].mkv")
+    out_put_file_name = kk.replace(f".{aa}", "[@Itsme123c].mkv")
     progress = os.path.join(output_directory, "progress.txt")
 
     # Clear progress file
@@ -55,7 +56,22 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
         return None
 
-    
+    # Get total frames using ffprobe (frame-based progress)
+    try:
+        cmd = [
+            'ffprobe', '-v', 'error',
+            '-select_streams', 'v:0',
+            '-show_entries', 'stream=nb_frames',
+            '-of', 'default=nokey=1:noprint_wrappers=1',
+            video_file
+        ]
+        output = subprocess.check_output(cmd, universal_newlines=True).strip()
+        total_frames = int(output) if output else None
+    except Exception as e:
+        logger.warning(f"Failed to get total frames: {e}")
+        total_frames = None
+
+    # Prepare FFmpeg command components
     ffmpeg_cmd = [
         "ffmpeg", "-hide_banner", "-loglevel", "error", "-progress", progress,
         "-i", video_file
@@ -63,9 +79,10 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
     
     if watermark is not None:
-        ffmpeg_cmd.extend(["-i", watermark])
+        ffmpeg_cmd.extend(["-i", watermark_file])
         ffmpeg_cmd.extend(["-filter_complex", 
                            "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"])
+                    
 
     ffmpeg_cmd.extend([
         "-c:v", video_codec,
@@ -73,8 +90,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-s", resolution,
         "-c:a", audio_codec,
         "-b:a", audio_b,
-        "-preset", preset,
-        "-x265-params", "bframes=8:psy-rd=1:ref=3:aq-mode=3:aq-strength=0.8:deblock=1,1:rc-lookahead=32"
+        "-preset", preset
     ])
             
     if video_bitrate is not None:
@@ -85,23 +101,19 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         
     ffmpeg_cmd.extend([
         "-map", "0", 
-        "-c:s", "copy", 
-        "-ac", "2", 
-        "-ab", audio_b, 
-        "-vbr", "2", 
-        "-level", "3.1"
+        "-c:s", "copy"
     ])
 
     logger.info(f"Input exists: {os.path.exists(video_file)}, Path: {video_file}")
     logger.info(f"Output directory exists: {os.path.exists(output_directory)}, Path: {output_directory}")
 
-    
+    # Complete FFmpeg command
     ffmpeg_cmd.extend([out_put_file_name, "-y"])
     file_genertor_command = " ".join(shlex.quote(x) for x in ffmpeg_cmd)
 
     logger.info(f"Running FFmpeg: {file_genertor_command}")
 
-   
+    # Start FFmpeg process
     COMPRESSION_START_TIME = time.time()
     process = await asyncio.create_subprocess_shell(
         file_genertor_command,
@@ -119,12 +131,14 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         f.seek(0)
         json.dump(statusMsg, f, indent=2)
 
-    # === TG: Itsme123c / Github: Telegram_Guyz ===
+    # === FRAME-BASED LOOP + TIME FALLBACK + ETA SIZE ===
     isDone = False
     last_percentage = -1
     stuck_counter = 0
+    elapsed_time = 0
+    speed = 1.0
 
-    
+    # Initial "Initializing" message
     init_progress_str = "♻️<b>ᴘʀᴏɢʀᴇss:</b> 0%\n[{0}{1}]".format(
         ''.join([FINISHED_PROGRESS_STR for i in range(math.floor(0 / 10))]),
         ''.join([UN_FINISHED_PROGRESS_STR for i in range(10 - math.floor(0 / 10))])
@@ -151,42 +165,44 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         try:
             if not os.path.exists(progress):
                 stuck_counter += 1
-                if stuck_counter > 10:
+                if stuck_counter > 10:  # 30s no file
                     logger.warning("progress.txt missing for 30s, but FFmpeg still running...")
                 continue
 
-            
+            # Safe read (your original method + error handling)
             with open(progress, 'r', encoding='utf-8', errors='ignore') as file:
                 text = file.read().strip()
 
             if not text:
                 continue
 
-            logger.debug(f"FFmpeg progress raw: {text[-200:]}")
+            logger.debug(f"FFmpeg progress raw: {text[-200:]}")  # Log last 200 chars for debug
 
-            
+            # Your original parsing (full file read)
             frame = re.findall("frame=(\d+)", text)
             time_in_us = re.findall("out_time_ms=(\d+)", text)
             progress_status = re.findall("progress=(\w+)", text)
             speed_matches = re.findall("speed=(\d+\.?\d*)x", text)
             fps_matches = re.findall("fps=(\d+\.?\d*)", text)
 
-            
-            if time_in_us:
-                time_in_us = int(time_in_us[-1])
-                elapsed_time = time_in_us / 1000000
-                use_time_based = True
-            else:
-                elapsed_time = 0
-                use_time_based = False
-
             current_frame = int(frame[-1]) if frame else 0
-            current_fps = float(fps_matches[-1]) if fps_matches else 30.0 
-            estimated_total_frames = total_time * current_fps
-            frame_percentage = (current_frame / estimated_total_frames * 100) if estimated_total_frames > 0 else 0
+            current_fps = float(fps_matches[-1]) if fps_matches else 30.0  # Default 30fps
 
-            percentage = math.floor(elapsed_time * 100 / total_time) if use_time_based and total_time > 0 else math.floor(frame_percentage)
-            percentage = min(100, percentage)
+            # Frame-based (preferred)
+            if total_frames:
+                percentage = math.floor((current_frame / total_frames) * 100) if total_frames > 0 else 0
+                use_frame = True
+            else:
+                # Time-based fallback
+                if time_in_us:
+                    time_in_us = int(time_in_us[-1])  # Last (most recent)
+                else:
+                    time_in_us = 0
+                elapsed_time = time_in_us / 1000000
+                percentage = math.floor(elapsed_time * 100 / total_time) if total_time > 0 else 0
+                use_frame = False
+
+            percentage = min(100, percentage)  # Allow 100% at end
 
             if speed_matches:
                 speed = float(speed_matches[-1])
@@ -198,21 +214,30 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
                 isDone = True
                 break
 
-            
+            # Update only if changed (your original logic + initial force)
             if percentage > last_percentage or last_percentage == -1:
                 last_percentage = percentage
                 stuck_counter = 0
 
-                if use_time_based:
-                    difference = math.floor((total_time - elapsed_time) / speed) if speed > 0 else 0
-                else:
-                    remaining_frames = max(0, estimated_total_frames - current_frame)
-                    remaining_time = remaining_frames / current_fps
+                # Your original ETA
+                if use_frame:
+                    remaining_frames = max(0, total_frames - current_frame)
+                    remaining_time = remaining_frames / current_fps if current_fps > 0 else 0
                     difference = math.floor(remaining_time / speed) if speed > 0 else 0
+                else:
+                    difference = math.floor((total_time - elapsed_time) / speed) if speed > 0 else 0
                 ETA = TimeFormatter(difference * 1000) if difference > 0 else "-"
 
+                # Time taken (elapsed encoding time)
                 time_taken = TimeFormatter((time.time() - COMPRESSION_START_TIME) * 1000)
 
+                # Estimated file size (running size / % * 100)
+                current_size = os.path.getsize(out_put_file_name) if os.path.exists(out_put_file_name) else 0
+                estimated_size = "-"
+                if percentage > 0 and current_size > 0:
+                    estimated_size = humanbytes(current_size / (percentage / 100))
+
+                # Your original progress string
                 progress_str = "♻️<b>ᴘʀᴏɢʀᴇss:</b> {0}%\n[{1}{2}]".format(
                     round(percentage, 2),
                     ''.join([FINISHED_PROGRESS_STR for i in range(math.floor(percentage / 10))]),
@@ -223,7 +248,8 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
                     f'<p>⚡ <b>ᴇɴᴄᴏᴅɪɴɢ ɪɴ ᴘʀᴏɢʀᴇss</b></p>\n\n'
                     f'🕛 <b>ᴛɪᴍᴇ ʟᴇғᴛ:</b> {ETA}\n'
                     f'<b>⏱️ ᴛɪᴍᴇ ᴛᴀᴋᴇɴ:</b> {time_taken}\n'
-                    f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n\n'
+                    f'<b>ꜱᴘᴇᴇᴅ:</b> {speed:.2f}x\n'
+                    f'<b>ᴇꜱᴛɪᴍᴀᴛᴇᴅ ꜱɪᴢᴇ:</b> {estimated_size}\n\n'
                     f'{progress_str}\n'
                 )
 
@@ -240,16 +266,17 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
                 except Exception as e:
                     logger.warning(f"Edit channel failed: {e}")
 
-                logger.debug(f"Progress updated: {percentage}% | Elapsed: {elapsed_time:.1f}s | Speed: {speed:.2f}x | Codec: {video_codec}")
+                logger.debug(f"Progress updated: {percentage}% | Elapsed: {elapsed_time:.1f}s | Speed: {speed:.2f}x")
 
             stuck_counter += 1
-            if stuck_counter > 20:
+            if stuck_counter > 20:  # 1min stuck warning
                 logger.warning(f"No progress update for 1min at {percentage}%, but FFmpeg alive...")
 
         except Exception as e:
             logger.warning(f"Safe progress read error: {e} — continuing...")
             continue
 
+    # Wait for FFmpeg to finish if not detected
     if not isDone:
         try:
             await asyncio.wait_for(process.wait(), timeout=60.0)  # 1min grace
