@@ -53,21 +53,38 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         await message.reply_text("<blockquote>DB error – cannot fetch settings.</blockquote>")
         return None
 
-    # -------------------------------------------------- 3. Get **total frames**
-    total_frames = None
+    # Get total frames and fps using ffprobe
     try:
         cmd = [
-            "ffprobe", "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=nb_frames",
-            "-of", "default=nokey=1:noprint_wrappers=1",
+            'ffprobe', '-v', 'error', '-select_streams', 'v:0',
+            '-show_entries', 'stream=nb_frames,r_frame_rate',
+            '-of', 'default=noprint_wrappers=1',
             video_file
         ]
-        out = subprocess.check_output(cmd, text=True).strip()
-        total_frames = int(out) if out.isdigit() else None
-        logger.info(f"Total frames (ffprobe): {total_frames}")
+        out = subprocess.check_output(cmd).decode('utf-8').strip().splitlines()
+        total_frames = None
+        fps = 30.0 
+        for line in out:
+            if line.startswith('nb_frames='):
+                total_frames = int(line.split('=')[1])
+            elif line.startswith('r_frame_rate='):
+                fps_str = line.split('=')[1]
+                if '/' in fps_str:
+                    num, den = map(int, fps_str.split('/'))
+                    fps = num / den
+                else:
+                    fps = float(fps_str)
+        logger.info(f"Total frames: {total_frames}, FPS: {fps}")
     except Exception as e:
-        logger.warning(f"ffprobe nb_frames failed: {e}")
+        logger.warning(f"ffprobe failed: {e}")
+        total_frames = None
+        fps = 30.0
+
+    # Estimate total frames if not available
+    if total_frames is None and total_time:
+        total_frames = int(total_time * fps)
+        logger.info(f"Estimated total frames: {total_frames}")
+        
 
     # -------------------------------------------------- 4. Build FFmpeg command
     ffmpeg_cmd = [
