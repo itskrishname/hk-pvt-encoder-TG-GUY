@@ -48,7 +48,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait
 from pymongo.errors import PyMongoError
 
-sudo_users = "7660990923" 
+SUDO_USER = 7465574522
 
 uptime = dt.now()
 
@@ -419,6 +419,16 @@ if __name__ == "__main__" :
         button
     )
     app.add_handler(call_back_button_handler)
+
+
+    @app.on_start()
+    async def notify_restart():
+        try:
+            await app.send_message(SUDO_USER, "🔄 Bot restarted and is now online!")
+            logger.info("Restart notification sent to sudo user.")
+        except Exception as e:
+            logger.error(f"Failed to send restart notification: {e}")
+            pass
 
     # run the APPlication
     app.run()
