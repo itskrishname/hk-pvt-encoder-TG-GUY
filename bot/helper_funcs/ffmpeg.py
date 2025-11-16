@@ -269,10 +269,6 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         if stuck_counter > 20:  # 1min stuck warning
             logger.warning(f"No progress update for 1min at {percentage}%, but FFmpeg alive...")
 
-    except Exception as e:
-        logger.warning(f"Safe progress read error: {e} — continuing...")
-        continue
-
     # Wait for FFmpeg to finish if not detected
     if not isDone:
         try:
