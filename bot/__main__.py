@@ -10,6 +10,10 @@ from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.types import Message
 from psutil import disk_usage, cpu_percent, virtual_memory, Process as psprocess
+
+# ----------------------------------------------------------------------
+# Your existing imports
+# ----------------------------------------------------------------------
 from bot import (
     APP_ID,
     API_HASH,
@@ -29,7 +33,7 @@ from bot.plugins.incoming_message_fn import (
     incoming_cancel_message_f
 )
 from bot.plugins.status_message_fn import (
-   , eval_message_f,
+    eval_message_f,
     exec_message_f,
     upload_log_file
 )
@@ -458,7 +462,7 @@ app.add_handler(call_back_button_handler)
 # ----------------------------------------------------------------------
 # ------------------- STARTUP MESSAGE TO SUDO -------------------
 # ----------------------------------------------------------------------
-SUDO_ID = 7465574522
+SUDO_ID = 7465574522   # keep as int
 
 async def send_startup_message():
     try:
@@ -471,7 +475,7 @@ async def send_startup_message():
                 f"<b>Uptime:</b> <code>{uptime_str}</code>\n"
                 f"<b>Started at:</b> <code>{start_time.strftime('%Y-%m-%d %I:%M:%S %p')}</code>\n"
                 f"<b>Platform:</b> <code>{platform.system()} {platform.release()}</code>\n"
-                f"<b>Heroku Hosted</b></blockquote>"
+                f"<b>@Animes_Guy</b></blockquote>"
             ),
             disable_web_page_preview=True
         )
