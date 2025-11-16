@@ -336,7 +336,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
                 # throttle updates to at most once per second
                 now = time.time()
-                if percentage != last_percentage and (now - last_update_time) >= 1.0:
+                if percentage != last_percentage and (now - last_update_time) >= EDIT_INTERVAL:
                     last_update_time = now
                     last_percentage = percentage
                     stuck_counter = 0
