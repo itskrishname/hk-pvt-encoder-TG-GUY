@@ -1,4 +1,9 @@
-import logging    
+import logging
+logging.getLogger("pymongo").setLevel(logging.WARNING)
+logging.getLogger("motor").setLevel(logging.WARNING)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+logging.getLogger("aiohttp").setLevel(logging.WARNING)
+
 import os
 import asyncio
 import platform
@@ -11,9 +16,6 @@ from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.types import Message
 from psutil import disk_usage, cpu_percent, virtual_memory, Process as psprocess
 
-# ----------------------------------------------------------------------
-# Your existing imports
-# ----------------------------------------------------------------------
 from bot import (
     APP_ID,
     API_HASH,
@@ -43,11 +45,6 @@ from helper.database import db
 from pyrogram.errors import FloodWait
 from pymongo.errors import PyMongoError
 
-# ----------------------------------------------------------------------
-# Logging setup
-# ----------------------------------------------------------------------
-logging.getLogger("pymongo").setLevel(logging.INFO)    
-logging.getLogger("motor").setLevel(logging.INFO)    
 logging.basicConfig(    
     level=logging.INFO,    
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",    
