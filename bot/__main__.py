@@ -10,10 +10,6 @@ from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
 from pyrogram.types import Message
 from psutil import disk_usage, cpu_percent, virtual_memory, Process as psprocess
-
-# ----------------------------------------------------------------------
-# Your existing imports
-# ----------------------------------------------------------------------
 from bot import (
     APP_ID,
     API_HASH,
@@ -462,7 +458,7 @@ app.add_handler(call_back_button_handler)
 # ----------------------------------------------------------------------
 # ------------------- STARTUP MESSAGE TO SUDO -------------------
 # ----------------------------------------------------------------------
-SUDO_ID = int(sudo_users)   # keep as int
+SUDO_ID = 7465574522
 
 async def send_startup_message():
     try:
