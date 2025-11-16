@@ -421,14 +421,12 @@ if __name__ == "__main__" :
     app.add_handler(call_back_button_handler)
 
 
-    @app.on_start()
-    async def notify_restart():
-        try:
-            await app.send_message(SUDO_USER, "🔄 Bot restarted and is now online!")
-            logger.info("Restart notification sent to sudo user.")
-        except Exception as e:
-            logger.error(f"Failed to send restart notification: {e}")
-            pass
+    async def start_bot():
+        await app.start()
+        await app.send_message(int(sudo_users), "<blockquote>♻️ Bot restarted and is now online!</blockquote>")
+        await idle()  # keep bot alive
 
-    # run the APPlication
-    app.run()
+    import asyncio
+    from pyrogram import idle
+
+    asyncio.run(start_bot())
