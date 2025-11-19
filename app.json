@@ -1,0 +1,62 @@
+{
+  "name": "EncoderX-Bot",
+  "description": "Telegram Encoder Bot (Docker deployment)",
+  "stack": "container",
+  "env": {
+    "SESSION_NAME": {
+      "description": "Pyrogram session name",
+      "value": "EncoderX",
+      "required": false
+    },
+    "APP_ID": {
+      "description": "Telegram API_ID from my.telegram.org",
+      "value": "",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API_HASH from my.telegram.org",
+      "value": "",
+      "required": true
+    },
+    "TG_BOT_TOKEN": {
+      "description": "Bot token from @BotFather",
+      "value": "",
+      "required": true
+    },
+    "BOT_USERNAME": {
+      "description": "Bot username without @",
+      "value": "",
+      "required": true
+    },
+    "AUTH_USERS": {
+      "description": "Comma-separated authorized user IDs (no spaces)",
+      "value": "",
+      "required": true
+    },
+    "LOG_CHANNEL": {
+      "description": "Log channel ID (e.g. -1001234567890) or username",
+      "value": "",
+      "required": true
+    },
+    "UPDATES_CHANNEL": {
+      "description": "Updates channel username without @ (optional)",
+      "value": "",
+      "required": false
+    },
+    "MONGO_URI": {
+      "description": "Full MongoDB connection string",
+      "value": "",
+      "required": true
+    },
+    "DB_NAME": {
+      "description": "MongoDB database name",
+      "value": "TGguy",
+      "required": true
+    },
+    "COLLECTION_NAME": {
+      "description": "MongoDB collection name",
+      "value": "Stores",
+      "required": true
+    }
+  }
+}
