@@ -8,7 +8,7 @@ class Config(object):
     API_HASH = get_config("API_HASH", "ffc3794690bf254d2867ac58fd293a60")
 
     # Bot Credentials 
-    TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8035877917:AAFLR5oEh_HCdUSUVrVClhFLDEJgBgJeuY8")
+    TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8347616055:AAHxACwlMceprKFi7opb1XTGh3kZzlVcsCE")
     BOT_USERNAME = get_config("BOT_USERNAME", "Oaid_enc_bot") #Without @
 
     # User or group id (Seperated by commas 
