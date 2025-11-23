@@ -141,20 +141,30 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     ]
 
     if watermark:
-        ffmpeg_cmd.extend(["-i", watermark])
-        # Keep your original filter_complex (user provided)
         ffmpeg_cmd.extend([
-            "-filter_complex",
-            "[1:v]scale=1000:-1[wm];[0:v][wm]overlay=x='if(between(t,5,20),(W-w)*(t-5)/5,if(between(t,845,860),(W-w)*(t-12)/6,if(between(t,1245,1260),(W-w)*(t-20)/5,NAN)))':y=10,scale=1920:1080,format=yuv420p10le"
+            "-vf", (
+                f"drawtext=text='{watermark}':"
+                "x='if(gte(t,240),w-(t-240)*60,NAN)':"
+                "y=10:"
+                "fontsize=24:"
+                "fontcolor=white:"
+                "enable='gte(t,240)':"
+                "box=0"
+            )
         ])
 
     ffmpeg_cmd.extend([
-        "-c:v", video_codec or "libx264",
-        "-crf", str(crf or 23),
-        "-s", resolution or "1280x720",
-        "-c:a", audio_codec or "aac",
-        "-b:a", audio_b or "128k",
-        "-preset", preset or "medium"
+        "-c:v", video_codec,
+        "-crf", crf,
+        "-s", resolution,
+        "-c:a", audio_codec,
+        "-b:a", audio_b,
+        "-preset", preset,
+        "-x265-params", (
+            "pools=2:frame-threads=2:bframes=8:ref=3:"
+            "aq-mode=3:aq-strength=0.8:psy-rd=1.2:"
+            "deblock=1,1:no-sao=1"
+        )  
     ])
 
     if video_bitrate:
