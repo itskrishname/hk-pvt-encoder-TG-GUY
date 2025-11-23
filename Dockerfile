@@ -10,6 +10,7 @@ RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /
         git \
         python3 \
         python3-pip \
+        fontconfig \
         wget \
         zstd \
         p7zip \
@@ -27,6 +28,11 @@ RUN cd /tmp && \
     chmod +x /usr/local/bin/ffmpeg /usr/local/bin/ffprobe && \
     rm -rf ffmpeg-git-* && \
     cd /app
+
+RUN apt-get -qq update && apt-get -qq install -y \
+    fonts-dejavu-core \
+    && fc-cache -fv \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip3 install --no-cache-dir --upgrade pip && \
