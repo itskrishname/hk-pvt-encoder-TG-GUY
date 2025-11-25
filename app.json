@@ -10,12 +10,12 @@
     },
     "APP_ID": {
       "description": "Telegram API_ID from my.telegram.org",
-      "value": "",
+      "value": "28891870",
       "required": true
     },
     "API_HASH": {
       "description": "Telegram API_HASH from my.telegram.org",
-      "value": "",
+      "value": "ffc3794690bf254d2867ac58fd293a60",
       "required": true
     },
     "TG_BOT_TOKEN": {
@@ -26,17 +26,17 @@
     "BOT_USERNAME": {
       "description": "Bot username without @",
       "value": "",
-      "required": true
+      "required": false
     },
     "AUTH_USERS": {
       "description": "Comma-separated authorized user IDs (no spaces)",
       "value": "",
-      "required": true
+      "required": false
     },
     "LOG_CHANNEL": {
       "description": "Log channel ID (e.g. -1001234567890) or username",
       "value": "",
-      "required": true
+      "required": false
     },
     "UPDATES_CHANNEL": {
       "description": "Updates channel username without @ (optional)",
@@ -45,7 +45,7 @@
     },
     "MONGO_URI": {
       "description": "Full MongoDB connection string",
-      "value": "",
+      "value": "mongodb+srv://Krishna:krishna@cluster0.ecime.mongodb.net/",
       "required": true
     },
     "DB_NAME": {
