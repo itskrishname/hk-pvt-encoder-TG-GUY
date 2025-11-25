@@ -27,7 +27,7 @@ from bot import (
     EDIT_INTERVAL,
     pid_list
 )
-from helper.database import db
+from bot.helper.database import db
 
 # ---------- Small helpers ----------
 def humanbytes(size: float) -> str:
