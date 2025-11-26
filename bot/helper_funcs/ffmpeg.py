@@ -155,7 +155,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
     ffmpeg_cmd.extend([
         "-c:v", video_codec,
-        "-crf", crf,
+        "-crf", str(crf),
         "-s", resolution,
         "-c:a", audio_codec,
         "-b:a", audio_b,
