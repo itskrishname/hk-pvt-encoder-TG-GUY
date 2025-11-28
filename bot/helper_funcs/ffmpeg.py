@@ -160,11 +160,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-c:a", audio_codec,
         "-b:a", audio_b,
         "-preset", preset,
-        "-x265-params", (
-            "pools=2:frame-threads=2:bframes=8:ref=3:"
-            "aq-mode=3:aq-strength=0.8:psy-rd=1.2:"
-            "deblock=1,1:no-sao=1"
-        )  
+        "-x265-params", "pools=2:frame-threads=1:wpp=1:pmode=0:pme=0:no-sao=1:aq-mode=1:aq-strength=0.8:psy-rd=1.0:ref=3:bframes=4:keyint=240:min-keyint=24:rc-lookahead=10"
     ])
 
     if video_bitrate:
