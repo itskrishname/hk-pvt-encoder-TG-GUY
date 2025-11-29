@@ -25,7 +25,7 @@
     },
     "BOT_USERNAME": {
       "description": "Bot username without @",
-      "value": "",
+      "value": "ErenXCoderobot",
       "required": false
     },
     "AUTH_USERS": {
@@ -50,7 +50,7 @@
     },
     "DB_NAME": {
       "description": "MongoDB database name",
-      "value": "TGguy",
+      "value": "enc01",
       "required": true
     },
     "COLLECTION_NAME": {
