@@ -166,7 +166,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     ])
 
     if video_bitrate:
-        ffmpeg_cmd.extend(["-b:v", video_bitrate])
+        ffmpeg_cmd.extend(["-b:v", str(video_bitrate)])
 
     if bits == "10":
         ffmpeg_cmd.extend(["-pix_fmt", "yuv420p10le"])
