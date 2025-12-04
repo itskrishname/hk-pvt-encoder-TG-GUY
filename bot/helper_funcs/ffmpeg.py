@@ -83,6 +83,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         video_bitrate = await db.get_video_bitrate()
         watermark = await db.get_watermark()
         bits = await db.get_bits()
+        size = await db.get_size()
     except Exception as e:
         logger.error(f"Failed to fetch settings from database: {e}")
         await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
@@ -146,7 +147,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
                 f"drawtext=text='{watermark}':"
                 "x='if(gte(t,240),w-(t-240)*60,NAN)':"
                 "y=10:"
-                "fontsize=24:"
+                f"fontsize={size}:"
                 "fontcolor=white:"
                 "enable='gte(t,240)':"
                 "box=0"
@@ -160,7 +161,8 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         "-c:a", audio_codec,
         "-b:a", audio_b,
         "-preset", preset,
-        "-x265-params", "pools=2:frame-threads=1:wpp=1:pmode=0:pme=0:no-sao=1:aq-mode=1:aq-strength=0.8:psy-rd=1.0:ref=3:bframes=4:keyint=240:min-keyint=24:rc-lookahead=10"
+        "-x265-params", "pools=2:frame-threads=1:wpp=1:pmode=0:pme=0:no-sao=1:aq-mode=1:aq-strength=0.8:psy-rd=1.0:ref=3:bframes=4:keyint=240:min-keyint=24:rc-lookahead=10",
+         "-tune", "animation"
     ])
 
     if video_bitrate:
@@ -168,6 +170,8 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
 
     if bits == "10":
         ffmpeg_cmd.extend(["-pix_fmt", "yuv420p10le"])
+    else: 
+        ffmpeg_cmd.extend(["-pix_fmt", "yuv420p"])
 
     ffmpeg_cmd.extend([
         "-map", "0",
