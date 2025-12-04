@@ -3,6 +3,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import time
 from pyrogram import Client
+from pyrogram.enums import ParseMode
 from bot.config import Config
 
 # dont think ne dumb (c)
@@ -40,7 +41,8 @@ app = Client(
         bot_token=TG_BOT_TOKEN,
         api_id=APP_ID,
         api_hash=API_HASH,
-        workers=2
+        workers=2,
+        parse_mode=ParseMode.HTML
     )
 if os.path.exists(LOG_FILE_ZZGEVC):
     with open(LOG_FILE_ZZGEVC, "r+") as f_d:
