@@ -18,15 +18,16 @@ class Database:
             print(f"MongoDB connection failed: {e}")
     
     defaults = {
-        "crf": 24,
-        "preset": "veryfast",
+        "crf": 29,
+        "preset": "faster",
         "resolution": "640x360",
-        "audio_b": "64k",
+        "audio_b": "32k",
         "audio_codec": "aac",
-        "video_codec": "libx264",
+        "video_codec": "libx265",
         "video_bitrate": 0,
         "bits": "8",
-        "watermark": 0
+        "watermark": 0,
+        "size": 24
     }
     
     async def get_crf(self):
@@ -35,7 +36,14 @@ class Database:
     
     async def set_crf(self, value):
         await self.collection.replace_one({"_id": "crf"}, {"_id": "crf", "value": value}, upsert=True)
+
+    async def get_size(self):
+        doc = await self.collection.find_one({"_id": "size"})
+        return doc["value"] if doc else self.defaults["size"]
     
+    async def set_size(self, value):
+        await self.collection.replace_one({"_id": "size"}, {"_id": "size", "value": value}, upsert=True)
+      
     async def get_watermark(self):
         doc = await self.collection.find_one({"_id": "watermark"})
         value = doc["value"] if doc else self.defaults["watermark"]
