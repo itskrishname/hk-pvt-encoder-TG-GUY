@@ -294,7 +294,7 @@ async def changewatermark(app, message):
                 OUT = f"<blockquote>I will be using : no watermark</blockquote>"    
             else:    
                 await db.set_watermark(wm)    
-                OUT = f"<blockquote>I will be using : {wm} watermark</blockquote>"    
+                OUT = f"<blockquote>I will be using : {wm} as watermark</blockquote>"    
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a watermark value, e.g., /watermark My Text Here (or 0/none for no watermark)</blockquote>")    
@@ -310,6 +310,31 @@ async def changewatermark(app, message):
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
+@app.on_message(filters.incoming & filters.command(["size", f"size@{BOT_USERNAME}"]))    
+async def changecrf(app, message):    
+    if message.from_user.id in AUTH_USERS:    
+        try:    
+            wm_size = message.text.split(" ", maxsplit=1)[1]    
+            wm_int = int(wm_size)    
+            await db.set_size(wm_int)    
+            OUT = f"<blockquote>I will be using : {wm_size} for watermark text size</blockquote>"    
+            await message.reply_text(OUT)    
+        except IndexError:    
+            await message.reply_text("<blockquote>Please provide a size value, e.g., /size 24</blockquote>")    
+        except ValueError:    
+            await message.reply_text("<blockquote>wm size must be an integer, e.g., 24</blockquote>")    
+        except PyMongoError as e:    
+            await message.reply_text("<blockquote>Database error: Could not save size value. Please try again later.</blockquote>")    
+            logger.error(f"DB Error in /size: {e}")    
+        except FloodWait as e:    
+            await asyncio.sleep(e.value)    
+            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+        except Exception as e:    
+            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            logger.error(f"Unexpected error in /size: {e}")    
+    else:    
+        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+    
 # ------------------- SETTINGS -------------------
 @app.on_message(filters.incoming & filters.command(["settings", f"settings@{BOT_USERNAME}"]))    
 async def settings(app, message):    
@@ -323,7 +348,8 @@ async def settings(app, message):
             video_codec_val = await db.get_video_codec()    
             video_bitrate_val = await db.get_video_bitrate()    
             watermark_val = await db.get_watermark()    
-            bits_val = await db.get_bits()    
+            bits_val = await db.get_bits()
+            size_val = await db.get_size()
 
             video_bitrate_display = "Auto/None" if video_bitrate_val is None else f"{video_bitrate_val}"    
             watermark_display = "None" if watermark_val is None else f"{watermark_val}"    
@@ -338,7 +364,8 @@ async def settings(app, message):
                 f"<b>Audio Bitrate</b> : <code>{audio_b_val}</code> \n"    
                 f"<b>Video Bitrate</b> : <code>{video_bitrate_display}</code> \n"    
                 f"<b>Bits</b> : <code>{bits_val} bits</code> \n"    
-                f"<b>Watermark</b> : <code>{watermark_display}</code></blockquote>\n"    
+                f"<b>Watermark</b> : <code>{watermark_display}</code></blockquote>\n"
+                f"<b>WM Size</b> : <code>{size_val}</code> \n"
                 f"<b>The Ability to Change Settings is Only for Admin</b>"    
             )    
             await message.reply_text(reply_text)    
