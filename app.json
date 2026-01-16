@@ -30,7 +30,7 @@
     },
     "AUTH_USERS": {
       "description": "Comma-separated authorized user IDs (no spaces)",
-      "value": "",
+      "value": "7660990923",
       "required": false
     },
     "LOG_CHANNEL": {
@@ -50,7 +50,7 @@
     },
     "DB_NAME": {
       "description": "MongoDB database name",
-      "value": "TGguy",
+      "value": "myencoder1",
       "required": true
     },
     "COLLECTION_NAME": {
