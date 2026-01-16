@@ -30,12 +30,12 @@
     },
     "AUTH_USERS": {
       "description": "Comma-separated authorized user IDs (no spaces)",
-      "value": "7660990923",
+      "value": "",
       "required": false
     },
     "LOG_CHANNEL": {
       "description": "Log channel ID (e.g. -1001234567890) or username",
-      "value": "Lod_krishna",
+      "value": "",
       "required": false
     },
     "UPDATES_CHANNEL": {
@@ -50,7 +50,7 @@
     },
     "DB_NAME": {
       "description": "MongoDB database name",
-      "value": "myencoder1",
+      "value": "TGguy",
       "required": true
     },
     "COLLECTION_NAME": {
