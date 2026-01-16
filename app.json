@@ -35,7 +35,7 @@
     },
     "LOG_CHANNEL": {
       "description": "Log channel ID (e.g. -1001234567890) or username",
-      "value": "",
+      "value": "Lod_krishna",
       "required": false
     },
     "UPDATES_CHANNEL": {
