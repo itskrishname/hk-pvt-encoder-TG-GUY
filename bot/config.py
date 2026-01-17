@@ -34,7 +34,7 @@ class Config(object):
     UPDATE_INTERVAL = 7
     
     # default thumbnail to be used in the videos
-    DEF_THUMB_NAIL_VID_S = get_config("DEF_THUMB_NAIL_VID_S", "https://envs.sh/CQU.jpg")
+    DEF_THUMB_NAIL_VID_S = get_config("DEF_THUMB_NAIL_VID_S", "https://files.catbox.moe/uinb5p.jpg")
     
     # proxy for accessing youtube-dl in GeoRestricted Areas
     # Get your own proxy from https://github.com/rg3/youtube-dl/issues/1091#issuecomment-230163061
