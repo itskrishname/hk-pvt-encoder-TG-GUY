@@ -29,6 +29,7 @@ from bot import (
     app
 )
 from bot.helper_funcs.utils import add_task, on_task_complete, sysinfo
+from bot.helper_funcs.set_commands import set_bot_commands
 from bot.plugins.incoming_message_fn import (
     incoming_start_message_f,
     incoming_compress_message_f,
@@ -513,6 +514,7 @@ async def send_startup_message():
 # ----------------------------------------------------------------------
 async def main():
     await app.start()
+    await set_bot_commands(app)
     await send_startup_message()          # <-- sends the restart notice
     me = await app.get_me()
     logger.info(f"Bot started as @{me.username}")
