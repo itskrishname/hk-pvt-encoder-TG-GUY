@@ -11,6 +11,10 @@ class Config(object):
     TG_BOT_TOKEN = get_config("TG_BOT_TOKEN", "8347616055:AAHxACwlMceprKFi7opb1XTGh3kZzlVcsCE")
     BOT_USERNAME = get_config("BOT_USERNAME", "Oaid_enc_bot") #Without @
 
+    # Heroku
+    HEROKU_API_KEY = get_config("HEROKU_API_KEY", None)
+    HEROKU_APP_NAME = get_config("HEROKU_APP_NAME", None)
+
     # User or group id (Seperated by commas 
     AUTH_USERS = [7660990923, 7465574522]
 
@@ -34,7 +38,7 @@ class Config(object):
     UPDATE_INTERVAL = 7
     
     # default thumbnail to be used in the videos
-    DEF_THUMB_NAIL_VID_S = get_config("DEF_THUMB_NAIL_VID_S", "https://files.catbox.moe/uinb5p.jpg")
+    DEF_THUMB_NAIL_VID_S = get_config("DEF_THUMB_NAIL_VID_S", "https://envs.sh/CQU.jpg")
     
     # proxy for accessing youtube-dl in GeoRestricted Areas
     # Get your own proxy from https://github.com/rg3/youtube-dl/issues/1091#issuecomment-230163061

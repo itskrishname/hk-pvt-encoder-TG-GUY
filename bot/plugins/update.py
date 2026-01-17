@@ -3,7 +3,9 @@ import sys
 import subprocess
 from datetime import datetime
 from pyrogram import filters
+import heroku3
 from bot import app, AUTH_USERS, BOT_USERNAME
+from bot.config import Config
 
 def run_command(command):
     try:
@@ -78,11 +80,32 @@ async def update_bot(client, message):
         if not success:
             await msg.edit(f"Error installing requirements:\n{output}\n\nBot will try to restart anyway.")
 
-        final_text = update_text + "» ʙᴏᴛ ᴜᴩᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ ! ɴᴏᴡ ᴡᴀɪᴛ ғᴏʀ ғᴇᴡ ᴍɪɴᴜᴛᴇs ᴜɴᴛɪʟ ᴛʜᴇ ʙᴏᴛ ʀᴇsᴛᴀʀᴛs ᴀɴᴅ ᴩᴜsʜ ᴄʜᴀɴɢᴇs !"
-        await msg.edit(final_text)
+        # Check if Heroku vars are present and valid
+        heroku_api = Config.HEROKU_API_KEY
+        heroku_app_name = Config.HEROKU_APP_NAME
 
-        # Restart
-        os.execl(sys.executable, sys.executable, "-m", "bot")
+        is_heroku = False
+        if heroku_api and heroku_app_name:
+            if heroku_api != "0" and heroku_app_name != "0" and heroku_api.strip() and heroku_app_name.strip():
+                is_heroku = True
+
+        if is_heroku:
+             final_text = update_text + "» ʙᴏᴛ ᴜᴩᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ ! ɴᴏᴡ ᴡᴀɪᴛ ғᴏʀ ғᴇᴡ ᴍɪɴᴜᴛᴇs ᴜɴᴛɪʟ ᴛʜᴇ ʙᴏᴛ ʀᴇsᴛᴀʀᴛs ᴏɴ ʜᴇʀᴏᴋᴜ !"
+             await msg.edit(final_text)
+
+             try:
+                 conn = heroku3.from_key(heroku_api)
+                 app_conn = conn.app(heroku_app_name)
+                 app_conn.restart()
+             except Exception as e:
+                 await msg.reply_text(f"Heroku restart failed: {str(e)}\nTrying local restart...")
+                 os.execl(sys.executable, sys.executable, "-m", "bot")
+        else:
+            final_text = update_text + "» ʙᴏᴛ ᴜᴩᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ ! ɴᴏᴡ ᴡᴀɪᴛ ғᴏʀ ғᴇᴡ ᴍɪɴᴜᴛᴇs ᴜɴᴛɪʟ ᴛʜᴇ ʙᴏᴛ ʀᴇsᴛᴀʀᴛs ᴀɴᴅ ᴩᴜsʜ ᴄʜᴀɴɢᴇs !"
+            await msg.edit(final_text)
+
+            # Restart
+            os.execl(sys.executable, sys.executable, "-m", "bot")
 
     except Exception as e:
         await msg.edit(f"An error occurred: {str(e)}")
