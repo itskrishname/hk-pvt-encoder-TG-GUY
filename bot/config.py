@@ -16,7 +16,7 @@ class Config(object):
     HEROKU_APP_NAME = get_config("HEROKU_APP_NAME", None)
 
     # User or group id (Seperated by commas 
-    AUTH_USERS = [7660990923, 7465574522]
+    AUTH_USERS = [7660990923]
 
     #Channels
     LOG_CHANNEL = get_config("LOG_CHANNEL", "Lod_krishna")
