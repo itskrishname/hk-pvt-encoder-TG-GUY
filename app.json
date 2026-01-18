@@ -35,7 +35,7 @@
     },
     "UPSTREAM_REPO": {
       "description": "Your Upstream Repo URL for updates",
-      "value": "https://github.com/AbhiMod/hk-pvt-encoder",
+      "value": "https://github.com/itskrishname/hk-pvt-encoder-TG-GUY.git",
       "required": false
     },
     "HEROKU_APP_NAME": {
