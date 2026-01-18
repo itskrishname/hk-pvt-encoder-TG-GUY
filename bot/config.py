@@ -14,6 +14,7 @@ class Config(object):
     # Heroku
     HEROKU_API_KEY = get_config("HEROKU_API_KEY", None)
     HEROKU_APP_NAME = get_config("HEROKU_APP_NAME", None)
+    UPSTREAM_REPO = get_config("UPSTREAM_REPO", "https://github.com/AbhiMod/hk-pvt-encoder")
 
     # User or group id (Seperated by commas 
     AUTH_USERS = [7660990923]

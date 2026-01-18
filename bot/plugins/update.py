@@ -23,6 +23,44 @@ async def update_bot(client, message):
     msg = await message.reply_text("Checking for updates...")
 
     try:
+        # Check if .git exists, if not, try to init using UPSTREAM_REPO
+        if not os.path.exists(".git"):
+            upstream_repo = Config.UPSTREAM_REPO
+            if upstream_repo:
+                await msg.edit("Initializing git repository...")
+                success, output = run_command("git init -q")
+                if not success:
+                    await msg.edit(f"Error initializing git:\n{output}")
+                    return
+
+                run_command('git config --global user.email "help@dan.com"')
+                run_command('git config --global user.name "dan"')
+
+                success, output = run_command(f"git remote add origin {upstream_repo}")
+                if not success:
+                    # Remote might already exist if init was run before but failed later
+                    # run_command(f"git remote set-url origin {upstream_repo}")
+                    await msg.edit(f"Error adding remote:\n{output}")
+                    return
+
+                success, output = run_command("git fetch origin")
+                if not success:
+                    await msg.edit(f"Error fetching from upstream:\n{output}")
+                    return
+
+                # Reset to origin/master or origin/main
+                # Try master first
+                success, output = run_command("git reset --hard origin/master")
+                if not success:
+                    # Try main
+                    success, output = run_command("git reset --hard origin/main")
+                    if not success:
+                         await msg.edit(f"Could not reset to origin/master or origin/main:\n{output}")
+                         return
+            else:
+                 await msg.edit("No .git folder found and no UPSTREAM_REPO configured.")
+                 return
+
         # Fetch updates
         success, output = run_command("git fetch origin")
         if not success:
