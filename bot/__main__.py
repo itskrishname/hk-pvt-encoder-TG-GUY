@@ -501,7 +501,7 @@ async def send_startup_message():
                 f"<b>Uptime:</b> <code>{uptime_str}</code>\n"
                 f"<b>Started at:</b> <code>{start_time.strftime('%Y-%m-%d %I:%M:%S %p')}</code>\n"
                 f"<b>Platform:</b> <code>{platform.system()} {platform.release()}</code>\n"
-                f"<b>@Animes_Guy</b></blockquote>"
+                f"<b>@Lord_Vasudev_Krishna</b></blockquote>"
             ),
             disable_web_page_preview=True
         )

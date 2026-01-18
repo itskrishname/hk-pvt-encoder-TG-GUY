@@ -164,7 +164,7 @@ async def incoming_compress_message_f(update):
     )
     await sent_message.edit_text(Localisation.UPLOAD_START)
 
-    caption = update.caption if update.caption else "Encoded by @Animes_Guy"
+    caption = update.caption if update.caption else "Encoded by @Lord_Vasudev_Krishna"
 
     # === AUTO-RETRY UPLOAD (3 TIMES) ===
     max_retries = 3
