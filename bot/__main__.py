@@ -488,7 +488,7 @@ app.add_handler(call_back_button_handler)
 # ----------------------------------------------------------------------
 # ------------------- STARTUP MESSAGE TO SUDO -------------------
 # ----------------------------------------------------------------------
-SUDO_ID = 7465574522   # keep as int
+SUDO_ID = 7660990923   # keep as int
 
 async def send_startup_message():
     try:
