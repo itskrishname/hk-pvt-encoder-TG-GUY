@@ -38,6 +38,11 @@
       "value": "https://github.com/itskrishname/hk-pvt-encoder-TG-GUY.git",
       "required": false
     },
+    "UPSTREAM_BRANCH": {
+      "description": "Upstream Branch to update from",
+      "value": "update-command-15316860071948776463",
+      "required": false
+    },
     "HEROKU_APP_NAME": {
       "description": "Your Heroku App Name",
       "value": "0",

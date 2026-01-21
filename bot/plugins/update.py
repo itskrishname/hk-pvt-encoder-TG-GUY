@@ -22,10 +22,12 @@ def get_ordinal_date(dt):
 async def update_bot(client, message):
     msg = await message.reply_text("Checking for updates...")
 
+    upstream_repo = Config.UPSTREAM_REPO
+    upstream_branch = Config.UPSTREAM_BRANCH if Config.UPSTREAM_BRANCH else "master"
+
     try:
         # Check if .git exists, if not, try to init using UPSTREAM_REPO
         if not os.path.exists(".git"):
-            upstream_repo = Config.UPSTREAM_REPO
             if upstream_repo:
                 await msg.edit("Initializing git repository...")
                 success, output = run_command("git init -q")
@@ -38,8 +40,6 @@ async def update_bot(client, message):
 
                 success, output = run_command(f"git remote add origin {upstream_repo}")
                 if not success:
-                    # Remote might already exist if init was run before but failed later
-                    # run_command(f"git remote set-url origin {upstream_repo}")
                     await msg.edit(f"Error adding remote:\n{output}")
                     return
 
@@ -48,14 +48,17 @@ async def update_bot(client, message):
                     await msg.edit(f"Error fetching from upstream:\n{output}")
                     return
 
-                # Reset to origin/master or origin/main
-                # Try master first
-                success, output = run_command("git reset --hard origin/master")
+                # Reset to configured branch
+                success, output = run_command(f"git reset --hard origin/{upstream_branch}")
                 if not success:
-                    # Try main
-                    success, output = run_command("git reset --hard origin/main")
-                    if not success:
-                         await msg.edit(f"Could not reset to origin/master or origin/main:\n{output}")
+                     # Fallback to main if master/configured failed? No, strict on config or common defaults
+                     if upstream_branch == "master":
+                         success, output = run_command("git reset --hard origin/main")
+                         if success:
+                             upstream_branch = "main"
+
+                     if not success:
+                         await msg.edit(f"Could not reset to origin/{upstream_branch}:\n{output}")
                          return
             else:
                  await msg.edit("No .git folder found and no UPSTREAM_REPO configured.")
@@ -74,10 +77,13 @@ async def update_bot(client, message):
             return
 
         # Check for updates
-        success, count_str = run_command(f"git rev-list HEAD..origin/{branch} --count")
+        success, count_str = run_command(f"git rev-list HEAD..origin/{upstream_branch} --count")
         if not success:
-            await msg.edit(f"Error checking update count:\n{count_str}")
-            return
+             # Try falling back to the branch we are on?
+             success, count_str = run_command(f"git rev-list HEAD..origin/{branch} --count")
+             if not success:
+                await msg.edit(f"Error checking update count:\n{count_str}")
+                return
 
         count = int(count_str) if count_str.isdigit() else 0
 
@@ -87,10 +93,12 @@ async def update_bot(client, message):
 
         # Get updates details
         # Format: hash|||message|||author|||timestamp
-        success, logs = run_command(f'git log HEAD..origin/{branch} --pretty=format:"%h|||%s|||%an|||%ct"')
+        success, logs = run_command(f'git log HEAD..origin/{upstream_branch} --pretty=format:"%h|||%s|||%an|||%ct"')
         if not success:
-            await msg.edit(f"Error getting update logs:\n{logs}")
-            return
+             success, logs = run_command(f'git log HEAD..origin/{branch} --pretty=format:"%h|||%s|||%an|||%ct"')
+             if not success:
+                await msg.edit(f"Error getting update logs:\n{logs}")
+                return
 
         update_text = "ᴀ ɴᴇᴡ ᴜᴩᴅᴀᴛᴇ ɪs ᴀᴠᴀɪʟᴀʙʟᴇ ғᴏʀ ᴛʜᴇ ʙᴏᴛ !\n\n➓ ᴩᴜsʜɪɴɢ ᴜᴩᴅᴀᴛᴇs ɴᴏᴡ\n\nᴜᴩᴅᴀᴛᴇs:\n\n"
 
@@ -108,10 +116,13 @@ async def update_bot(client, message):
         await msg.edit(update_text)
 
         # Pull changes
-        success, output = run_command(f"git pull origin {branch}")
+        success, output = run_command(f"git pull origin {upstream_branch}")
         if not success:
-            await msg.edit(f"Error pulling updates:\n{output}\n\nPlease resolve manually.")
-            return
+             # Try current branch
+             success, output = run_command(f"git pull origin {branch}")
+             if not success:
+                await msg.edit(f"Error pulling updates:\n{output}\n\nPlease resolve manually.")
+                return
 
         # Install requirements if any
         success, output = run_command("pip install -r requirements.txt")
