@@ -218,6 +218,15 @@ async def incoming_compress_message_f(update):
     except:
         pass
 
+    try:
+        await bot.send_message(
+            chat_id=update.chat.id,
+            text=f"Hello {update.from_user.mention}, Your encoding is complete!",
+            reply_to_message_id=update.id
+        )
+    except:
+        pass
+
     if os.path.exists(video):
         os.remove(video)
     if os.path.exists(encoded_file):
