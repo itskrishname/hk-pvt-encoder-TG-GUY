@@ -43,6 +43,7 @@ from bot.plugins.status_message_fn import (
 from bot.commands import Command
 from bot.plugins.call_back_button_handler import button
 import bot.plugins.update
+import bot.plugins.authorize
 from bot.helper.database import db
 from pyrogram.errors import FloodWait
 from pymongo.errors import PyMongoError
