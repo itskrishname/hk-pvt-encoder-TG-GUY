@@ -60,15 +60,19 @@ async def button(bot, update: CallbackQuery):
 
                 try:
                     async with aiohttp.ClientSession() as session:
-                        async with session.post("https://dpaste.org/api/", data={"content": content, "lexer": "text", "format": "url"}) as resp:
-                            if resp.status == 200:
-                                link = await resp.text()
-                                link = link.strip()
-                                await update.message.reply_text(f"Log uploaded: {link}")
+                        async with session.post("https://nekobin.com/api/documents", json={"content": content}) as resp:
+                            if resp.status == 200 or resp.status == 201:
+                                res_json = await resp.json()
+                                if res_json.get("result") and res_json["result"].get("key"):
+                                    key = res_json["result"]["key"]
+                                    link = f"https://nekobin.com/{key}"
+                                    await update.message.reply_text(f"Log uploaded: {link}")
+                                else:
+                                    await update.message.reply_text("Failed to get key from Nekobin.")
                             else:
-                                await update.message.reply_text(f"Dpaste upload failed: {resp.status}")
+                                await update.message.reply_text(f"Nekobin upload failed: {resp.status}")
                 except Exception as e:
-                    await update.message.reply_text(f"Error uploading to Dpaste: {str(e)}")
+                    await update.message.reply_text(f"Error uploading to Nekobin: {str(e)}")
 
                 await update.message.delete()
             else:
