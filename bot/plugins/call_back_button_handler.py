@@ -64,7 +64,7 @@ async def button(bot, update: CallbackQuery):
                 async with aiohttp.ClientSession() as session:
                     # Try Batbin first
                     try:
-                        async with session.post("https://batbin.me/api/v1/documents", json={"content": content}) as resp:
+                        async with session.post("https://batbin.me/api/v1/documents", json={"content": content}, timeout=10) as resp:
                             if resp.status in [200, 201]:
                                 res = await resp.json()
                                 if "key" in res:
@@ -77,7 +77,7 @@ async def button(bot, update: CallbackQuery):
                     # Try Spacebin if Batbin failed
                     if not link:
                         try:
-                            async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}) as resp:
+                            async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}, timeout=10) as resp:
                                 if resp.status in [200, 201]:
                                     res = await resp.json()
                                     if res.get("payload") and res["payload"].get("id"):
