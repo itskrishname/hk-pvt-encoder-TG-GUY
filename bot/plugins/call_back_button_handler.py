@@ -60,19 +60,19 @@ async def button(bot, update: CallbackQuery):
 
                 try:
                     async with aiohttp.ClientSession() as session:
-                        async with session.post("https://batbin.me/api/v1/paste", json={"content": content}) as resp:
+                        async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}) as resp:
                             if resp.status == 201 or resp.status == 200:
                                 res_json = await resp.json()
-                                key = res_json.get("key")
-                                if key:
-                                    link = f"https://batbin.me/{key}"
+                                if res_json.get("payload") and res_json["payload"].get("id"):
+                                    key = res_json["payload"]["id"]
+                                    link = f"https://spaceb.in/{key}"
                                     await update.message.reply_text(f"Log uploaded: {link}")
                                 else:
-                                    await update.message.reply_text("Failed to get key from Batbin.")
+                                    await update.message.reply_text("Failed to get key from Spacebin.")
                             else:
-                                await update.message.reply_text(f"Batbin upload failed: {resp.status}")
+                                await update.message.reply_text(f"Spacebin upload failed: {resp.status}")
                 except Exception as e:
-                    await update.message.reply_text(f"Error uploading to Batbin: {str(e)}")
+                    await update.message.reply_text(f"Error uploading to Spacebin: {str(e)}")
 
                 await update.message.delete()
             else:
