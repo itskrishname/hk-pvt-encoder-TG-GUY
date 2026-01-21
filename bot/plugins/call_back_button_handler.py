@@ -13,7 +13,6 @@ import logging
 import os, signal
 import json
 import shutil
-import aiohttp
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -53,48 +52,6 @@ async def button(bot, update: CallbackQuery):
             else:
                 await update.answer("Not Authorized", show_alert=True)
 
-        elif cb_data == "log_batbin":
-            if update.from_user.id in AUTH_USERS:
-                with open(LOG_FILE_ZZGEVC, "r") as f:
-                    content = f.read()
-
-                link = None
-                error_msg = ""
-
-                async with aiohttp.ClientSession() as session:
-                    # Try Batbin first
-                    try:
-                        async with session.post("https://batbin.me/api/v1/documents", json={"content": content}, timeout=10) as resp:
-                            if resp.status in [200, 201]:
-                                res = await resp.json()
-                                if "key" in res:
-                                    link = f"https://batbin.me/{res['key']}"
-                            else:
-                                error_msg += f"Batbin: {resp.status} "
-                    except Exception as e:
-                        error_msg += f"Batbin Err: {str(e)} "
-
-                    # Try Spacebin if Batbin failed
-                    if not link:
-                        try:
-                            async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}, timeout=10) as resp:
-                                if resp.status in [200, 201]:
-                                    res = await resp.json()
-                                    if res.get("payload") and res["payload"].get("id"):
-                                        link = f"https://spaceb.in/{res['payload']['id']}"
-                                else:
-                                    error_msg += f"Spacebin: {resp.status}"
-                        except Exception as e:
-                            error_msg += f"Spacebin Err: {str(e)}"
-
-                if link:
-                    await update.message.reply_text(f"Log uploaded: {link}")
-                else:
-                    await update.message.reply_text(f"Upload failed. Errors: {error_msg}")
-
-                await update.message.delete()
-            else:
-                await update.answer("Not Authorized", show_alert=True)
 
         elif cb_data == "fuckingdo":
             if update.from_user.id in AUTH_USERS:

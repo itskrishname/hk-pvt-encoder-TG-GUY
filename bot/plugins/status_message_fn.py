@@ -147,8 +147,7 @@ async def upload_log_file(client, message):
     keyboard = InlineKeyboardMarkup([
         [
             InlineKeyboardButton("File", callback_data="log_file"),
-            InlineKeyboardButton("Text", callback_data="log_text"),
-            InlineKeyboardButton("Batbin", callback_data="log_batbin")
+            InlineKeyboardButton("Text", callback_data="log_text")
         ]
     ])
     await message.reply_text("Choose log format:", reply_markup=keyboard)
