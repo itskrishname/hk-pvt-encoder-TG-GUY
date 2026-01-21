@@ -30,6 +30,7 @@ from bot.helper_funcs.display_progress import (
     TimeFormatter,
     humanbytes
 )
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 
 async def exec_message_f(client, message):
@@ -143,8 +144,13 @@ async def aexec(code, client, message):
 
 async def upload_log_file(client, message):
   if message.from_user.id in AUTH_USERS:
-    await message.reply_document(
-        LOG_FILE_ZZGEVC
-    )
+    keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("File", callback_data="log_file"),
+            InlineKeyboardButton("Text", callback_data="log_text"),
+            InlineKeyboardButton("Batbin", callback_data="log_batbin")
+        ]
+    ])
+    await message.reply_text("Choose log format:", reply_markup=keyboard)
   else:
     return

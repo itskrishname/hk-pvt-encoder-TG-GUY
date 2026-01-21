@@ -4,7 +4,8 @@ from bot import (
     DOWNLOAD_LOCATION,
     LOG_CHANNEL,
     data,
-    pid_list
+    pid_list,
+    LOG_FILE_ZZGEVC
 )
 from pyrogram.types import CallbackQuery
 import datetime
@@ -12,6 +13,7 @@ import logging
 import os, signal
 import json
 import shutil
+import aiohttp
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -31,7 +33,52 @@ async def button(bot, update: CallbackQuery):
     LOGGER.info(update.message.reply_to_message.from_user.id)
     if (update.from_user.id == update.message.reply_to_message.from_user.id) or g:
         print(cb_data)
-        if cb_data == "fuckingdo":
+
+        if cb_data == "log_file":
+            if update.from_user.id in AUTH_USERS:
+                await update.message.reply_document(LOG_FILE_ZZGEVC)
+                await update.message.delete()
+            else:
+                await update.answer("Not Authorized", show_alert=True)
+
+        elif cb_data == "log_text":
+            if update.from_user.id in AUTH_USERS:
+                with open(LOG_FILE_ZZGEVC, "r") as f:
+                    content = f.read()
+                if len(content) > 4000:
+                    content = content[-4000:]
+                    content = f"...\n{content}"
+                await update.message.reply_text(f"<blockquote>{content}</blockquote>")
+                await update.message.delete()
+            else:
+                await update.answer("Not Authorized", show_alert=True)
+
+        elif cb_data == "log_batbin":
+            if update.from_user.id in AUTH_USERS:
+                with open(LOG_FILE_ZZGEVC, "r") as f:
+                    content = f.read()
+
+                try:
+                    async with aiohttp.ClientSession() as session:
+                        async with session.post("https://batbin.me/api/v1/paste", json={"content": content}) as resp:
+                            if resp.status == 201 or resp.status == 200:
+                                res_json = await resp.json()
+                                key = res_json.get("key")
+                                if key:
+                                    link = f"https://batbin.me/{key}"
+                                    await update.message.reply_text(f"Log uploaded: {link}")
+                                else:
+                                    await update.message.reply_text("Failed to get key from Batbin.")
+                            else:
+                                await update.message.reply_text(f"Batbin upload failed: {resp.status}")
+                except Exception as e:
+                    await update.message.reply_text(f"Error uploading to Batbin: {str(e)}")
+
+                await update.message.delete()
+            else:
+                await update.answer("Not Authorized", show_alert=True)
+
+        elif cb_data == "fuckingdo":
             if update.from_user.id in AUTH_USERS:
                 status = DOWNLOAD_LOCATION + "/status.json"
                 with open(status, 'r+') as f:
