@@ -514,6 +514,17 @@ async def send_startup_message():
 # ----------------------------------------------------------------------
 async def main():
     await app.start()
+
+    # Load authorized users from DB
+    try:
+        db_auth_users = await db.get_auth_users()
+        for user_id in db_auth_users:
+            if user_id not in AUTH_USERS:
+                AUTH_USERS.append(user_id)
+        logger.info(f"Loaded {len(db_auth_users)} authorized users from DB.")
+    except Exception as e:
+        logger.error(f"Failed to load authorized users from DB: {e}")
+
     await set_bot_commands(app)
     await send_startup_message()          # <-- sends the restart notice
     me = await app.get_me()

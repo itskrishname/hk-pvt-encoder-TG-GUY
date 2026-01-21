@@ -101,6 +101,17 @@ class Database:
     
     async def set_bits(self, value):
         await self.collection.replace_one({"_id": "bits"}, {"_id": "bits", "value": value}, upsert=True)
+
+    async def get_auth_users(self):
+        doc = await self.collection.find_one({"_id": "auth_users"})
+        return doc["users"] if doc and "users" in doc else []
+
+    async def add_auth_user(self, user_id):
+        await self.collection.update_one(
+            {"_id": "auth_users"},
+            {"$addToSet": {"users": user_id}},
+            upsert=True
+        )
             
 
 db = Database()
