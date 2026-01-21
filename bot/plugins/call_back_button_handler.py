@@ -60,19 +60,15 @@ async def button(bot, update: CallbackQuery):
 
                 try:
                     async with aiohttp.ClientSession() as session:
-                        async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}) as resp:
-                            if resp.status == 201 or resp.status == 200:
-                                res_json = await resp.json()
-                                if res_json.get("payload") and res_json["payload"].get("id"):
-                                    key = res_json["payload"]["id"]
-                                    link = f"https://spaceb.in/{key}"
-                                    await update.message.reply_text(f"Log uploaded: {link}")
-                                else:
-                                    await update.message.reply_text("Failed to get key from Spacebin.")
+                        async with session.post("https://dpaste.org/api/", data={"content": content, "lexer": "text", "format": "url"}) as resp:
+                            if resp.status == 200:
+                                link = await resp.text()
+                                link = link.strip()
+                                await update.message.reply_text(f"Log uploaded: {link}")
                             else:
-                                await update.message.reply_text(f"Spacebin upload failed: {resp.status}")
+                                await update.message.reply_text(f"Dpaste upload failed: {resp.status}")
                 except Exception as e:
-                    await update.message.reply_text(f"Error uploading to Spacebin: {str(e)}")
+                    await update.message.reply_text(f"Error uploading to Dpaste: {str(e)}")
 
                 await update.message.delete()
             else:
