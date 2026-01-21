@@ -58,21 +58,39 @@ async def button(bot, update: CallbackQuery):
                 with open(LOG_FILE_ZZGEVC, "r") as f:
                     content = f.read()
 
-                try:
-                    async with aiohttp.ClientSession() as session:
-                        async with session.post("https://nekobin.com/api/documents", json={"content": content}) as resp:
-                            if resp.status == 200 or resp.status == 201:
-                                res_json = await resp.json()
-                                if res_json.get("result") and res_json["result"].get("key"):
-                                    key = res_json["result"]["key"]
-                                    link = f"https://nekobin.com/{key}"
-                                    await update.message.reply_text(f"Log uploaded: {link}")
-                                else:
-                                    await update.message.reply_text("Failed to get key from Nekobin.")
+                link = None
+                error_msg = ""
+
+                async with aiohttp.ClientSession() as session:
+                    # Try Batbin first
+                    try:
+                        async with session.post("https://batbin.me/api/v1/documents", json={"content": content}) as resp:
+                            if resp.status in [200, 201]:
+                                res = await resp.json()
+                                if "key" in res:
+                                    link = f"https://batbin.me/{res['key']}"
                             else:
-                                await update.message.reply_text(f"Nekobin upload failed: {resp.status}")
-                except Exception as e:
-                    await update.message.reply_text(f"Error uploading to Nekobin: {str(e)}")
+                                error_msg += f"Batbin: {resp.status} "
+                    except Exception as e:
+                        error_msg += f"Batbin Err: {str(e)} "
+
+                    # Try Spacebin if Batbin failed
+                    if not link:
+                        try:
+                            async with session.post("https://spaceb.in/api/v1/documents", json={"content": content, "extension": "txt"}) as resp:
+                                if resp.status in [200, 201]:
+                                    res = await resp.json()
+                                    if res.get("payload") and res["payload"].get("id"):
+                                        link = f"https://spaceb.in/{res['payload']['id']}"
+                                else:
+                                    error_msg += f"Spacebin: {resp.status}"
+                        except Exception as e:
+                            error_msg += f"Spacebin Err: {str(e)}"
+
+                if link:
+                    await update.message.reply_text(f"Log uploaded: {link}")
+                else:
+                    await update.message.reply_text(f"Upload failed. Errors: {error_msg}")
 
                 await update.message.delete()
             else:
