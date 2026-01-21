@@ -8,6 +8,7 @@ async def set_bot_commands(client: Client):
         BotCommand("ping", "Check ping"),
         BotCommand("settings", "View current settings (Admin)"),
         BotCommand("sysinfo", "View system info (Admin)"),
+        BotCommand("auth", "Authorize user (Admin)"),
         BotCommand("update", "Update the bot (Admin)"),
         BotCommand("restart", "Restart the bot (Admin)"),
         BotCommand("log", "Get log file (Admin)"),
