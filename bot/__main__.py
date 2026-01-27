@@ -445,7 +445,12 @@ async def settings(app, message):
                     InlineKeyboardButton("Edit Audio Bitrate", callback_data=f"edit_audio_b{m_suffix}")
                 ],
                 [
-                    InlineKeyboardButton("Edit Video Codec", callback_data=f"edit_video_codec{m_suffix}")
+                    InlineKeyboardButton("Edit Video Codec", callback_data=f"edit_video_codec{m_suffix}"),
+                    InlineKeyboardButton("Edit Audio Codec", callback_data=f"edit_audio_codec{m_suffix}")
+                ],
+                [
+                    InlineKeyboardButton("Edit Bits", callback_data=f"edit_bits{m_suffix}"),
+                    InlineKeyboardButton("Edit Watermark", callback_data=f"edit_watermark{m_suffix}")
                 ]
             ])
 
@@ -524,6 +529,18 @@ async def state_handler(client, message):
                 await db.set_audio_b(value, mode)
             elif setting == "video_codec":
                 await db.set_video_codec(value, mode)
+            elif setting == "audio_codec":
+                await db.set_audio_codec(value, mode)
+            elif setting == "bits":
+                if value not in ["8", "10"]:
+                    await message.reply_text("Bits must be either 8 or 10")
+                    return
+                await db.set_bits(value, mode)
+            elif setting == "watermark":
+                if value.strip().lower() in ["0", "none", ""]:
+                    await db.set_watermark(0, mode)
+                else:
+                    await db.set_watermark(value, mode)
 
             mode_str = mode if mode else "default/480p"
             await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
