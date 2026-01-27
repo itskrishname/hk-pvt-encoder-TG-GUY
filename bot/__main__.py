@@ -7,6 +7,7 @@ logging.getLogger("aiohttp").setLevel(logging.WARNING)
 import os
 import asyncio
 import platform
+import traceback
 from datetime import datetime as dt
 
 import pyrogram
@@ -105,11 +106,13 @@ def get_mode_from_command(command_str):
 
 # ------------------- CRF -------------------
 @app.on_message(filters.incoming & filters.command(["crf", "crf1", "crf2"]))
-async def changecrf(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changecrf(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            cr = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            cr = text.split(" ", maxsplit=1)[1]
             cr_int = int(cr)    
             await db.set_crf(cr_int, mode)
             mode_str = mode if mode else "default/480p"
@@ -127,17 +130,19 @@ async def changecrf(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /crf: {e}")    
+            logger.error(f"Unexpected error in /crf: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- RESOLUTION -------------------
 @app.on_message(filters.incoming & filters.command(["resolution", "resolution1", "resolution2"]))
-async def changer(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changer(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            res = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            res = text.split(" ", maxsplit=1)[1]
             await db.set_resolution(res, mode)
             mode_str = mode if mode else "default/480p"
             OUT = f"<blockquote>I will be using : {res} for {mode_str}</blockquote>"
@@ -152,17 +157,19 @@ async def changer(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /resolution: {e}")    
+            logger.error(f"Unexpected error in /resolution: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- PRESET -------------------
 @app.on_message(filters.incoming & filters.command(["preset", "preset1", "preset2"]))
-async def changepr(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changepr(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            preset_val = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            preset_val = text.split(" ", maxsplit=1)[1]
             await db.set_preset(preset_val, mode)
             mode_str = mode if mode else "default/480p"
             OUT = f"<blockquote>I will be using : {preset_val} preset for {mode_str}</blockquote>"
@@ -177,17 +184,19 @@ async def changepr(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /preset: {e}")    
+            logger.error(f"Unexpected error in /preset: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- V_CODEC -------------------
 @app.on_message(filters.incoming & filters.command(["v_codec", "v_codec1", "v_codec2"]))
-async def changevcodec(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changevcodec(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            codec_val = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            codec_val = text.split(" ", maxsplit=1)[1]
             await db.set_video_codec(codec_val, mode)
             mode_str = mode if mode else "default/480p"
             OUT = f"<blockquote>I will be using : {codec_val} video codec for {mode_str}</blockquote>"
@@ -202,17 +211,19 @@ async def changevcodec(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /v_codec: {e}")    
+            logger.error(f"Unexpected error in /v_codec: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- A_CODEC -------------------
 @app.on_message(filters.incoming & filters.command(["a_codec", "a_codec1", "a_codec2"]))
-async def changeacodec(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changeacodec(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            codec_val = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            codec_val = text.split(" ", maxsplit=1)[1]
             await db.set_audio_codec(codec_val, mode)
             mode_str = mode if mode else "default/480p"
             OUT = f"<blockquote>I will be using : {codec_val} audio codec for {mode_str}</blockquote>"
@@ -227,17 +238,19 @@ async def changeacodec(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /a_codec: {e}")    
+            logger.error(f"Unexpected error in /a_codec: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- AUDIO_B -------------------
 @app.on_message(filters.incoming & filters.command(["audio_b", "audio_b1", "audio_b2"]))
-async def changeab(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changeab(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            aud = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            aud = text.split(" ", maxsplit=1)[1]
             await db.set_audio_b(aud, mode)
             mode_str = mode if mode else "default/480p"
             OUT = f"<blockquote>I will be using : {aud} audio bitrate for {mode_str}</blockquote>"
@@ -252,17 +265,19 @@ async def changeab(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /audio_b: {e}")    
+            logger.error(f"Unexpected error in /audio_b: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- V_BITRATE -------------------
 @app.on_message(filters.incoming & filters.command(["v_bitrate", "v_bitrate1", "v_bitrate2"]))
-async def changevbitrate(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changevbitrate(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            br = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            br = text.split(" ", maxsplit=1)[1]
             br_int = int(br)    
             await db.set_video_bitrate(br_int, mode)
             display = "no video bitrate (auto)" if br_int == 0 else f"{br_int}"    
@@ -281,17 +296,19 @@ async def changevbitrate(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /v_bitrate: {e}")    
+            logger.error(f"Unexpected error in /v_bitrate: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- BITS -------------------
 @app.on_message(filters.incoming & filters.command(["bits", "bits1", "bits2"]))
-async def changebits(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changebits(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            bits_val = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            bits_val = text.split(" ", maxsplit=1)[1]
             if bits_val not in ["8", "10"]:    
                 await message.reply_text("<blockquote>Bits must be either 8 or 10, e.g., /bits 10</blockquote>")    
                 return    
@@ -309,17 +326,19 @@ async def changebits(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /bits: {e}")    
+            logger.error(f"Unexpected error in /bits: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")     
 
 # ------------------- WATERMARK -------------------
 @app.on_message(filters.incoming & filters.command(["watermark", "watermark1", "watermark2"]))
-async def changewatermark(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changewatermark(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            wm = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            wm = text.split(" ", maxsplit=1)[1]
             if wm.strip().lower() in ["0", "none", ""]:    
                 await db.set_watermark(0, mode)
                 mode_str = mode if mode else "default/480p"
@@ -339,16 +358,18 @@ async def changewatermark(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /watermark: {e}")    
+            logger.error(f"Unexpected error in /watermark: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 @app.on_message(filters.incoming & filters.command(["size", "size1", "size2"]))
-async def changecrf(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def changecrf(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = get_mode_from_command(message.command[0])
-        try:    
-            wm_size = message.text.split(" ", maxsplit=1)[1]    
+        try:
+            text = message.text or message.caption
+            wm_size = text.split(" ", maxsplit=1)[1]
             wm_int = int(wm_size)    
             await db.set_size(wm_int, mode)
             mode_str = mode if mode else "default/480p"
@@ -366,14 +387,15 @@ async def changecrf(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /size: {e}")    
+            logger.error(f"Unexpected error in /size: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
     
 # ------------------- SETTINGS -------------------
 @app.on_message(filters.incoming & filters.command(["settings", "settings1", "settings2"]))
-async def settings(app, message):    
-    if message.from_user.id in AUTH_USERS:
+async def settings(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         mode = None
         if message.command[0].endswith("1"):
             mode = "720p"
@@ -433,14 +455,15 @@ async def settings(app, message):
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
             await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
-            logger.error(f"Unexpected error in /settings: {e}")    
+            logger.error(f"Unexpected error in /settings: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- COMPRESS -------------------
 @app.on_message(filters.incoming & filters.command(["compress", f"compress@{BOT_USERNAME}"]))    
-async def help_message(app, message):    
-    if message.chat.id not in AUTH_USERS:    
+async def help_message(app, message):
+    chat_id = message.chat.id if message.chat else None
+    if chat_id not in AUTH_USERS:
         return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
     query = await message.reply_text("Aᴅᴅᴇᴅ Tᴏ Qᴜᴇᴜᴇ...\nPʟᴇᴀꜱᴇ ʙᴇ Pᴀᴛɪᴇɴᴛ, Cᴏᴍᴘʀᴇꜱꜱ ᴡɪʟʟ Sᴛᴀʀᴛ Sᴏᴏɴ", quote=True)    
     data.append((message.reply_to_message, None))
@@ -450,8 +473,9 @@ async def help_message(app, message):
 
 # ------------------- RESTART -------------------
 @app.on_message(filters.incoming & filters.command(["restart", f"restart@{BOT_USERNAME}"]))    
-async def restarter(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+async def restarter(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         await message.reply_text("Rᴇꜱᴛᴀʀᴛɪɴɢ...")    
         quit(1)    
     else:    
@@ -460,15 +484,17 @@ async def restarter(app, message):
 # ------------------- CLEAR -------------------
 @app.on_message(filters.incoming & filters.command(["clear", f"clear@{BOT_USERNAME}"]))    
 async def restarter(app, message):    
-    data.clear()    
-    if message.chat.id not in AUTH_USERS:    
+    data.clear()
+    chat_id = message.chat.id if message.chat else None
+    if chat_id not in AUTH_USERS:
         return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
     await message.reply_text("<blockquote>Sᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ Cʟᴇᴀʀᴇᴅ Qᴜᴇᴜᴇ...</blockquote>")    
 
 # ------------------- VIDEO / DOCUMENT -------------------
 @app.on_message(filters.incoming & (filters.video | filters.document))    
-async def help_message(app, message):    
-    if message.chat.id not in AUTH_USERS:    
+async def help_message(app, message):
+    chat_id = message.chat.id if message.chat else None
+    if chat_id not in AUTH_USERS:
         return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
     # Instead of starting immediately, show quality options
     await incoming_start_message_f(app, message, quality_check=True)
@@ -476,11 +502,13 @@ async def help_message(app, message):
 # ------------------- STATE HANDLER -------------------
 @app.on_message(filters.text & ~filters.command(list(filter(lambda x: x.startswith("/"), ["/"]))))
 async def state_handler(client, message):
-    if message.from_user.id in user_states:
-        state = user_states[message.from_user.id]
+    user_id = message.from_user.id if message.from_user else None
+    if user_id and user_id in user_states:
+        state = user_states[user_id]
         setting = state["setting"]
         mode = state["mode"]
-        value = message.text.strip()
+        text = message.text or message.caption or ""
+        value = text.strip()
 
         try:
             if setting == "crf":
@@ -494,14 +522,15 @@ async def state_handler(client, message):
 
             mode_str = mode if mode else "default/480p"
             await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
-            del user_states[message.from_user.id]
+            del user_states[user_id]
         except Exception as e:
-            await message.reply_text(f"Error updating setting: {e}")
+            await message.reply_text(f"Error updating setting: {e}\n{traceback.format_exc()}")
 
 # ------------------- SYSINFO -------------------
 @app.on_message(filters.incoming & filters.command(["sysinfo", f"sysinfo@{BOT_USERNAME}"]))    
-async def help_message(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+async def help_message(app, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id in AUTH_USERS:
         await sysinfo(message)    
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
