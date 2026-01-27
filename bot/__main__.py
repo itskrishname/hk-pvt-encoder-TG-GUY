@@ -443,6 +443,9 @@ async def settings(app, message):
                 [
                     InlineKeyboardButton("Edit Preset", callback_data=f"edit_preset{m_suffix}"),
                     InlineKeyboardButton("Edit Audio Bitrate", callback_data=f"edit_audio_b{m_suffix}")
+                ],
+                [
+                    InlineKeyboardButton("Edit Video Codec", callback_data=f"edit_video_codec{m_suffix}")
                 ]
             ])
 
@@ -519,6 +522,8 @@ async def state_handler(client, message):
                 await db.set_preset(value, mode)
             elif setting == "audio_b":
                 await db.set_audio_b(value, mode)
+            elif setting == "video_codec":
+                await db.set_video_codec(value, mode)
 
             mode_str = mode if mode else "default/480p"
             await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
