@@ -98,7 +98,7 @@ async def process_encoding(update, bot, mode=None):
     now = f"\n{ist} (GMT+05:30)\n{bst} (GMT+06:00)"
     download_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**𝙱𝚘𝚝 𝙱𝚎𝚌𝚘𝚖𝚎 𝙱𝚞𝚜𝚢 𝙽𝚘𝚠...**{now}</blockquote>"
+        text=f"<blockquote expandable>**𝙱𝚘𝚝 𝙱𝚎𝚌𝚘𝚖𝚎 𝙱𝚞𝚜𝚢 𝙽𝚘𝚠...**{now}</blockquote>"
     )
 
     file_name = message.video.file_name if message.video else message.document.file_name
@@ -116,13 +116,13 @@ async def process_encoding(update, bot, mode=None):
         )
         if not video or not os.path.exists(video):
             await sent_message.edit_text("Download Stopped")
-            await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Stopped**{now}</blockquote>")
+            await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**File Download Stopped**{now}</blockquote>")
             await download_start.delete()
             return
     except Exception as e:
         LOGGER.error(f"Download failed: {e}")
-        await sent_message.edit_text(f"<blockquote>Error: {str(e)}</blockquote>")
-        await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Error!**{now}</blockquote>")
+        await sent_message.edit_text(f"<blockquote expandable>Error: {str(e)}</blockquote>")
+        await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**File Download Error!**{now}</blockquote>")
         await download_start.delete()
         return
 
@@ -132,7 +132,7 @@ async def process_encoding(update, bot, mode=None):
     if duration is None or bitrate is None:
         LOGGER.error("Failed to get video metadata")
         await sent_message.edit_text("Getting Video Meta Data Failed")
-        await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Download Failed**{now}</blockquote>")
+        await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**File Download Failed**{now}</blockquote>")
         await download_start.delete()
         if os.path.exists(video):
             os.remove(video)
@@ -147,7 +147,7 @@ async def process_encoding(update, bot, mode=None):
     await download_start.delete()
     compress_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**Encoding Video ({mode})...**{now}</blockquote>"
+        text=f"<blockquote expandable>**Encoding Video ({mode})...**{now}</blockquote>"
     )
     await sent_message.edit_text(Localisation.COMPRESS_START + f" Mode: {mode}")
 
@@ -173,7 +173,7 @@ async def process_encoding(update, bot, mode=None):
     if not encoded_file or not os.path.exists(encoded_file):
         LOGGER.error("Compression failed")
         await sent_message.edit_text("Compression Failed")
-        await bot.send_message(LOG_CHANNEL, f"<blockquote>**Video Compression Failed**{now}</blockquote>")
+        await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**Video Compression Failed**{now}</blockquote>")
         await compress_start.delete()
         if os.path.exists(video):
             os.remove(video)
@@ -183,7 +183,7 @@ async def process_encoding(update, bot, mode=None):
     await compress_start.delete()
     upload_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**Uploading Video on TG...**{now}</blockquote>"
+        text=f"<blockquote expandable>**Uploading Video on TG...**{now}</blockquote>"
     )
     await sent_message.edit_text(Localisation.UPLOAD_START)
 
@@ -212,10 +212,10 @@ async def process_encoding(update, bot, mode=None):
             LOGGER.error(f"Upload attempt {attempt} failed: {e}")
             if attempt < max_retries:
                 await asyncio.sleep(5 * attempt)  # 5s, 10s, 20s
-                await bot.send_message(LOG_CHANNEL, f"<blockquote>**Upload Retry {attempt}/{max_retries}...**{now}</blockquote>")
+                await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**Upload Retry {attempt}/{max_retries}...**{now}</blockquote>")
             else:
-                await sent_message.edit_text(f"<blockquote>Upload Failed After {max_retries} Attempts\nError: {str(e)}</blockquote>")
-                await bot.send_message(LOG_CHANNEL, f"<blockquote>**File Upload Failed After {max_retries} Tries**{now}</blockquote>")
+                await sent_message.edit_text(f"<blockquote expandable>Upload Failed After {max_retries} Attempts\nError: {str(e)}</blockquote>")
+                await bot.send_message(LOG_CHANNEL, f"<blockquote expandable>**File Upload Failed After {max_retries} Tries**{now}</blockquote>")
 
     if not uploaded:
         await upload_start.delete()
@@ -231,7 +231,7 @@ async def process_encoding(update, bot, mode=None):
     await upload_start.delete()
     await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**ENCODED UPLOAD Done**{now}</blockquote>"
+        text=f"<blockquote expandable>**ENCODED UPLOAD Done**{now}</blockquote>"
     )
 
     try:
@@ -290,6 +290,6 @@ async def incoming_cancel_message_f(bot, update):
    # delete_downloads()
     await bot.send_message(
       chat_id=update.chat.id,
-      text="<blockquote>No active compression exists</blockquote>",
+      text="<blockquote expandable>No active compression exists</blockquote>",
       reply_to_message_id=update.id
     )

@@ -48,7 +48,7 @@ async def button(bot, update: CallbackQuery):
             if len(content) > 4000:
                 content = content[-4000:]
                 content = f"...\n{content}"
-            await update.message.reply_text(f"<blockquote>{content}</blockquote>")
+            await update.message.reply_text(f"<blockquote expandable>{content}</blockquote>")
             await update.message.delete()
         else:
             await update.answer("Not Authorized", show_alert=True)
@@ -125,10 +125,10 @@ async def button(bot, update: CallbackQuery):
                         datetime.timedelta(minutes=00, hours=6)
                     bst = bst_now.strftime("%d/%m/%Y, %H:%M:%S")
                     now = f"\n{ist} (GMT+05:30)`\n`{bst} (GMT+06:00)"
-                    await bot.send_message(chat_id, f"<blockquote>**Last Process Cancelled.\n.....Bot is Free Now.....🥀**</blockquote>")
+                    await bot.send_message(chat_id, f"<blockquote expandable>**Last Process Cancelled.\n.....Bot is Free Now.....🥀**</blockquote>")
         else:
             try:
-                await update.message.edit_text("<blockquote>You are Not Allowed to do That 🤭</blockquote>")
+                await update.message.edit_text("<blockquote expandable>You are Not Allowed to do That 🤭</blockquote>")
             except:
                 pass
 

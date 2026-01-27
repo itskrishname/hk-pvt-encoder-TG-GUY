@@ -1,7 +1,7 @@
 from bot.get_cfg import get_config
 
 class Localisation:
-    START_TEXT = "Hᴇʟʟᴏ, \n<blockquote>Tʜɪꜱ ɪꜱ ᴀ Tᴇʟᴇɢʀᴀᴍ <b>Video Encoder Bot</b>. \n\n<b>Pʟᴇᴀꜱᴇ Sᴇɴᴅ ᴍᴇ ᴀɴʏ Tᴇʟᴇɢʀᴀᴍ Bɪɢ Vɪᴅᴇᴏ Fɪʟᴇ ɪ ᴡɪʟʟ Cᴏᴍᴘʀᴇꜱꜱ Iᴛ ᴀꜱ  Sᴍᴀʟʟ Vɪᴅᴇᴏ Fɪʟᴇ!</b> \n\n/help Fᴏʀ Mᴏʀᴇ Dᴇᴛᴀɪʟꜱ.</blockquote> \n✨ Eɴᴊᴏʏ....."
+    START_TEXT = "Hᴇʟʟᴏ, \n<blockquote expandable>Tʜɪꜱ ɪꜱ ᴀ Tᴇʟᴇɢʀᴀᴍ <b>Video Encoder Bot</b>. \n\n<b>Pʟᴇᴀꜱᴇ Sᴇɴᴅ ᴍᴇ ᴀɴʏ Tᴇʟᴇɢʀᴀᴍ Bɪɢ Vɪᴅᴇᴏ Fɪʟᴇ ɪ ᴡɪʟʟ Cᴏᴍᴘʀᴇꜱꜱ Iᴛ ᴀꜱ  Sᴍᴀʟʟ Vɪᴅᴇᴏ Fɪʟᴇ!</b> \n\n/help Fᴏʀ Mᴏʀᴇ Dᴇᴛᴀɪʟꜱ.</blockquote> \n✨ Eɴᴊᴏʏ....."
    
     ABS_TEXT = " Please don't be selfish."
     
@@ -20,7 +20,7 @@ class Localisation:
     
     COMPRESS_SUCCESS =  "𝙱𝙾𝚃 𝙱𝚈➛@SECRECT_BOT_UPDATES 𝙼𝚊𝚍𝚎 𝙱𝚢➛ @Lord_Vasudev_Krishna"
 
-    COMPRESS_PROGRESS = "<blockquote>⏳ ETA: {}\n🚀 Pʀᴏɢʀᴇꜱꜱ: {}%</blockquote>"
+    COMPRESS_PROGRESS = "<blockquote expandable>⏳ ETA: {}\n🚀 Pʀᴏɢʀᴇꜱꜱ: {}%</blockquote>"
 
     SAVED_CUSTOM_THUMB_NAIL = "Custom video / file thumbnail saved. This image will be used in the video / file."
     

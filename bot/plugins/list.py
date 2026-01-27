@@ -4,7 +4,7 @@ from bot import app, AUTH_USERS, BOT_USERNAME, data
 @app.on_message(filters.command(["list", f"list@{BOT_USERNAME}"]) & filters.user(AUTH_USERS))
 async def list_tasks(client, message):
     if not data:
-        await message.reply_text("<blockquote>No active tasks in queue.</blockquote>")
+        await message.reply_text("<blockquote expandable>No active tasks in queue.</blockquote>")
         return
 
     text = "<b>📋 Active Task Queue:</b>\n\n"
@@ -27,4 +27,4 @@ async def list_tasks(client, message):
 
         text += f"<b>{i+1}.</b> {user}\n   ├ <b>Mode:</b> {mode}\n   └ <b>File:</b> {file_name}\n\n"
 
-    await message.reply_text(f"<blockquote>{text}</blockquote>")
+    await message.reply_text(f"<blockquote expandable>{text}</blockquote>")

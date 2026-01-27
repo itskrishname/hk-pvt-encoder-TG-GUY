@@ -71,4 +71,4 @@ async def down_load_media_f(client, message):
             gaut_response = await upload_to_gdrive(the_real_download_location_g, mess_age, message, user_id)
             LOGGER.info(gaut_response)
     else:
-        await mess_age.edit_text("<blockquote>Rᴇᴘʟʏ ᴛᴏ ᴀ Tᴇʟᴇɢʀᴀᴍ Mᴇᴅɪᴀ, ᴛᴏ Uᴘʟᴏᴀᴅ ᴛᴏ Tʜᴇ Cʟᴏᴜᴅ Dʀɪᴠᴇ.</blockquote>")
+        await mess_age.edit_text("<blockquote expandable>Rᴇᴘʟʏ ᴛᴏ ᴀ Tᴇʟᴇɢʀᴀᴍ Mᴇᴅɪᴀ, ᴛᴏ Uᴘʟᴏᴀᴅ ᴛᴏ Tʜᴇ Cʟᴏᴜᴅ Dʀɪᴠᴇ.</blockquote>")

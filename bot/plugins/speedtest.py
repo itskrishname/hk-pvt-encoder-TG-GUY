@@ -5,23 +5,23 @@ from bot.helper_funcs.display_progress import humanbytes
 
 @app.on_message(filters.command(["speedtest", f"speedtest@{BOT_USERNAME}"]) & filters.user(AUTH_USERS))
 async def run_speedtest(client, message):
-    msg = await message.reply_text("<blockquote>Running Speedtest... Please wait.</blockquote>")
+    msg = await message.reply_text("<blockquote expandable>Running Speedtest... Please wait.</blockquote>")
 
     try:
         st = speedtest.Speedtest()
-        await msg.edit("<blockquote>Finding best server...</blockquote>")
+        await msg.edit("<blockquote expandable>Finding best server...</blockquote>")
         st.get_best_server()
 
-        await msg.edit("<blockquote>Testing Download...</blockquote>")
+        await msg.edit("<blockquote expandable>Testing Download...</blockquote>")
         download = st.download()
 
-        await msg.edit("<blockquote>Testing Upload...</blockquote>")
+        await msg.edit("<blockquote expandable>Testing Upload...</blockquote>")
         upload = st.upload()
 
         ping = st.results.ping
 
         text = f"""
-<blockquote><b>🚀 Speedtest Results</b>
+<blockquote expandable><b>🚀 Speedtest Results</b>
 
 <b>Download:</b> {humanbytes(download / 8)}/s
 <b>Upload:</b> {humanbytes(upload / 8)}/s
@@ -31,4 +31,4 @@ async def run_speedtest(client, message):
         await msg.edit(text)
 
     except Exception as e:
-        await msg.edit(f"<blockquote>Speedtest Failed: {str(e)}</blockquote>")
+        await msg.edit(f"<blockquote expandable>Speedtest Failed: {str(e)}</blockquote>")

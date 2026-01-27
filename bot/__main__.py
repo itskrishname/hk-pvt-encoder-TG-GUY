@@ -117,23 +117,23 @@ async def changecrf(app, message):
             cr_int = int(cr)    
             await db.set_crf(cr_int, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {cr} crf for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {cr} crf for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a CRF value, e.g., /crf 24</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a CRF value, e.g., /crf 24</blockquote>")
         except ValueError:    
-            await message.reply_text("<blockquote>CRF must be an integer, e.g., 24</blockquote>")    
+            await message.reply_text("<blockquote expandable>CRF must be an integer, e.g., 24</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save CRF value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save CRF value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /crf: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /crf: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- RESOLUTION -------------------
 @app.on_message(filters.incoming & filters.command(["resolution", "resolution1", "resolution2"]))
@@ -146,21 +146,21 @@ async def changer(app, message):
             res = text.split(" ", maxsplit=1)[1]
             await db.set_resolution(res, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {res} for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {res} for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a resolution value, e.g., /resolution 640x360</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a resolution value, e.g., /resolution 640x360</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save resolution value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save resolution value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /resolution: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /resolution: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- PRESET -------------------
 @app.on_message(filters.incoming & filters.command(["preset", "preset1", "preset2"]))
@@ -173,21 +173,21 @@ async def changepr(app, message):
             preset_val = text.split(" ", maxsplit=1)[1]
             await db.set_preset(preset_val, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {preset_val} preset for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {preset_val} preset for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a preset value, e.g., /preset veryfast</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a preset value, e.g., /preset veryfast</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save preset value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save preset value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /preset: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /preset: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- V_CODEC -------------------
 @app.on_message(filters.incoming & filters.command(["v_codec", "v_codec1", "v_codec2"]))
@@ -200,21 +200,21 @@ async def changevcodec(app, message):
             codec_val = text.split(" ", maxsplit=1)[1]
             await db.set_video_codec(codec_val, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {codec_val} video codec for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {codec_val} video codec for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a video codec value, e.g., /v_codec libx264</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a video codec value, e.g., /v_codec libx264</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save video codec value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save video codec value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /v_codec: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /v_codec: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- A_CODEC -------------------
 @app.on_message(filters.incoming & filters.command(["a_codec", "a_codec1", "a_codec2"]))
@@ -227,21 +227,21 @@ async def changeacodec(app, message):
             codec_val = text.split(" ", maxsplit=1)[1]
             await db.set_audio_codec(codec_val, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {codec_val} audio codec for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {codec_val} audio codec for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide an audio codec value, e.g., /a_codec aac</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide an audio codec value, e.g., /a_codec aac</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save audio codec value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save audio codec value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /a_codec: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /a_codec: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- AUDIO_B -------------------
 @app.on_message(filters.incoming & filters.command(["audio_b", "audio_b1", "audio_b2"]))
@@ -254,21 +254,21 @@ async def changeab(app, message):
             aud = text.split(" ", maxsplit=1)[1]
             await db.set_audio_b(aud, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {aud} audio bitrate for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {aud} audio bitrate for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide an audio bitrate value, e.g., /audio_b 64k</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide an audio bitrate value, e.g., /audio_b 64k</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save audio bitrate value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save audio bitrate value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /audio_b: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /audio_b: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- V_BITRATE -------------------
 @app.on_message(filters.incoming & filters.command(["v_bitrate", "v_bitrate1", "v_bitrate2"]))
@@ -283,23 +283,23 @@ async def changevbitrate(app, message):
             await db.set_video_bitrate(br_int, mode)
             display = "no video bitrate (auto)" if br_int == 0 else f"{br_int}"    
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {display} video bitrate for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {display} video bitrate for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a video bitrate value, e.g., /v_bitrate 1000 (or 0 for none/auto)</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a video bitrate value, e.g., /v_bitrate 1000 (or 0 for none/auto)</blockquote>")
         except ValueError:    
-            await message.reply_text("<blockquote>Video bitrate must be an integer, e.g., 1000 or 0</blockquote>")    
+            await message.reply_text("<blockquote expandable>Video bitrate must be an integer, e.g., 1000 or 0</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save video bitrate value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save video bitrate value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /v_bitrate: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /v_bitrate: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- BITS -------------------
 @app.on_message(filters.incoming & filters.command(["bits", "bits1", "bits2"]))
@@ -311,25 +311,25 @@ async def changebits(app, message):
             text = message.text or message.caption
             bits_val = text.split(" ", maxsplit=1)[1]
             if bits_val not in ["8", "10"]:    
-                await message.reply_text("<blockquote>Bits must be either 8 or 10, e.g., /bits 10</blockquote>")    
+                await message.reply_text("<blockquote expandable>Bits must be either 8 or 10, e.g., /bits 10</blockquote>")
                 return    
             await db.set_bits(bits_val, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {bits_val}-bit video encoding for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {bits_val}-bit video encoding for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a bits value, e.g., /bits 10</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a bits value, e.g., /bits 10</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save bits value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save bits value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /bits: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /bits: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")     
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- WATERMARK -------------------
 @app.on_message(filters.incoming & filters.command(["watermark", "watermark1", "watermark2"]))
@@ -343,25 +343,25 @@ async def changewatermark(app, message):
             if wm.strip().lower() in ["0", "none", ""]:    
                 await db.set_watermark(0, mode)
                 mode_str = mode if mode else "default/480p"
-                OUT = f"<blockquote>I will be using : no watermark for {mode_str}</blockquote>"
+                OUT = f"<blockquote expandable>I will be using : no watermark for {mode_str}</blockquote>"
             else:    
                 await db.set_watermark(wm, mode)
                 mode_str = mode if mode else "default/480p"
-                OUT = f"<blockquote>I will be using : {wm} as watermark for {mode_str}</blockquote>"
+                OUT = f"<blockquote expandable>I will be using : {wm} as watermark for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a watermark value, e.g., /watermark My Text Here (or 0/none for no watermark)</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a watermark value, e.g., /watermark My Text Here (or 0/none for no watermark)</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save watermark value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save watermark value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /watermark: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /watermark: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 @app.on_message(filters.incoming & filters.command(["size", "size1", "size2"]))
 async def changecrf(app, message):
@@ -374,23 +374,23 @@ async def changecrf(app, message):
             wm_int = int(wm_size)    
             await db.set_size(wm_int, mode)
             mode_str = mode if mode else "default/480p"
-            OUT = f"<blockquote>I will be using : {wm_size} for watermark text size for {mode_str}</blockquote>"
+            OUT = f"<blockquote expandable>I will be using : {wm_size} for watermark text size for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
-            await message.reply_text("<blockquote>Please provide a size value, e.g., /size 24</blockquote>")    
+            await message.reply_text("<blockquote expandable>Please provide a size value, e.g., /size 24</blockquote>")
         except ValueError:    
-            await message.reply_text("<blockquote>wm size must be an integer, e.g., 24</blockquote>")    
+            await message.reply_text("<blockquote expandable>wm size must be an integer, e.g., 24</blockquote>")
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not save size value. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not save size value. Please try again later.</blockquote>")
             logger.error(f"DB Error in /size: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /size: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
     
 # ------------------- SETTINGS -------------------
 @app.on_message(filters.incoming & filters.command(["settings", "settings1", "settings2"]))
@@ -421,7 +421,7 @@ async def settings(app, message):
 
             reply_text = (    
                 f"<b>Tʜᴇ Cᴜʀʀᴇɴᴛ Sᴇᴛᴛɪɴɢꜱ ᴡɪʟʟ ʙᴇ Aᴅᴅᴇᴅ Yᴏᴜʀ Vɪᴅᴇᴏ Fɪʟᴇ ({mode_display}):</b>\n"
-                f"<blockquote><b>Video Codec</b> : <code>{video_codec_val}</code> \n"    
+                f"<blockquote expandable><b>Video Codec</b> : <code>{video_codec_val}</code> \n"
                 f"<b>Audio Codec</b> : <code>{audio_codec_val}</code> \n"    
                 f"<b>Crf</b> : <code>{crf_val}</code> \n"    
                 f"<b>Resolution</b> : <code>{resolution_val}</code> \n"    
@@ -457,23 +457,23 @@ async def settings(app, message):
 
             await message.reply_text(reply_text, reply_markup=keyboard)
         except PyMongoError as e:    
-            await message.reply_text("<blockquote>Database error: Could not retrieve settings. Please try again later.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Database error: Could not retrieve settings. Please try again later.</blockquote>")
             logger.error(f"DB Error in /settings: {e}")    
         except FloodWait as e:    
             await asyncio.sleep(e.value)    
-            await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
+            await message.reply_text("<blockquote expandable>Rate limit hit, please try again shortly.</blockquote>")
         except Exception as e:    
-            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
+            await message.reply_text(f"<blockquote expandable>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /settings: {e}\n{traceback.format_exc()}")
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- COMPRESS -------------------
 @app.on_message(filters.incoming & filters.command(["compress", f"compress@{BOT_USERNAME}"]))    
 async def help_message(app, message):
     chat_id = message.chat.id if message.chat else None
     if chat_id not in AUTH_USERS:
-        return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
+        return await message.reply_text("<blockquote expandable>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
     query = await message.reply_text("Aᴅᴅᴇᴅ Tᴏ Qᴜᴇᴜᴇ...\nPʟᴇᴀꜱᴇ ʙᴇ Pᴀᴛɪᴇɴᴛ, Cᴏᴍᴘʀᴇꜱꜱ ᴡɪʟʟ Sᴛᴀʀᴛ Sᴏᴏɴ", quote=True)    
     data.append((message.reply_to_message, None))
     if len(data) == 1:    
@@ -488,7 +488,7 @@ async def restarter(app, message):
         await message.reply_text("Rᴇꜱᴛᴀʀᴛɪɴɢ...")    
         quit(1)    
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- CLEAR -------------------
 @app.on_message(filters.incoming & filters.command(["clear", f"clear@{BOT_USERNAME}"]))    
@@ -496,15 +496,15 @@ async def restarter(app, message):
     data.clear()
     chat_id = message.chat.id if message.chat else None
     if chat_id not in AUTH_USERS:
-        return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
-    await message.reply_text("<blockquote>Sᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ Cʟᴇᴀʀᴇᴅ Qᴜᴇᴜᴇ...</blockquote>")    
+        return await message.reply_text("<blockquote expandable>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
+    await message.reply_text("<blockquote expandable>Sᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ Cʟᴇᴀʀᴇᴅ Qᴜᴇᴜᴇ...</blockquote>")
 
 # ------------------- VIDEO / DOCUMENT -------------------
 @app.on_message(filters.incoming & (filters.video | filters.document))    
 async def help_message(app, message):
     chat_id = message.chat.id if message.chat else None
     if chat_id not in AUTH_USERS:
-        return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
+        return await message.reply_text("<blockquote expandable>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
     # Instead of starting immediately, show quality options
     await incoming_start_message_f(app, message, quality_check=True)
 
@@ -515,7 +515,7 @@ async def help_message(app, message):
     if user_id in AUTH_USERS:
         await sysinfo(message)    
     else:    
-        await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
+        await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
 # ------------------- CANCEL -------------------
 @app.on_message(filters.incoming & filters.command(["cancel", f"cancel@{BOT_USERNAME}"]))    
@@ -542,7 +542,7 @@ async def help_message(app, message):
 async def help_message(app, message):    
     await message.reply_text(
         "Hɪ, ɪ ᴀᴍ <b>Video Encoder bot</b>\n"
-        "<blockquote>➥ Sᴇɴᴅ ᴍᴇ Yᴏᴜʀ Tᴇʟᴇɢʀᴀᴍ Fɪʟᴇꜱ\n"
+        "<blockquote expandable>➥ Sᴇɴᴅ ᴍᴇ Yᴏᴜʀ Tᴇʟᴇɢʀᴀᴍ Fɪʟᴇꜱ\n"
         "➥ I ᴡɪʟʟ Eɴᴄᴏᴅᴇ ᴛʜᴇᴍ Oɴᴇ ʙʏ Oɴᴇ Aꜱ ɪ Hᴀᴠᴇ <b>Queue Feature</b>\n"
         "➥ Jᴜꜱᴛ Sᴇɴᴅ ᴍᴇ ᴛʜᴇ Jᴘɢ/Pɪᴄ ᴀɴᴅ Iᴛ Wɪʟʟ ʙᴇ Sᴇᴛ ᴀꜱ Yᴏᴜʀ Cᴜꜱᴛᴏᴍ Tʜᴜᴍʙɴᴀɪʟ \n"
         "➥ Fᴏʀ FFᴍᴘᴇɢ Lᴏᴠᴇʀꜱ - U ᴄᴀɴ Cʜᴀɴɢᴇ ᴄʀꜰ Bʏ /eval crf.insert(0, 'crf value')</blockquote> \n"
@@ -561,7 +561,7 @@ async def up(app, message):
     stt = dt.now()    
     ed = dt.now()    
     v = ts(int((ed - uptime).total_seconds() * 1000))    
-    u = f"<blockquote>Bᴏᴛ ᴜᴘᴛɪᴍᴇ = {v} </blockquote>"    
+    u = f"<blockquote expandable>Bᴏᴛ ᴜᴘᴛɪᴍᴇ = {v} </blockquote>"
     ms = (ed - stt).microseconds / 1000    
     p = f"Pɪɴɢ = {ms}ms "    
     await message.reply_text(u + "\n" + p)    
@@ -625,7 +625,7 @@ async def send_startup_message():
         await app.send_message(
             chat_id=SUDO_ID,
             text=(
-                "<blockquote><b>Bot Restarted Successfully!</b>\n\n"
+                "<blockquote expandable><b>Bot Restarted Successfully!</b>\n\n"
                 f"<b>Uptime:</b> <code>{uptime_str}</code>\n"
                 f"<b>Started at:</b> <code>{start_time.strftime('%Y-%m-%d %I:%M:%S %p')}</code>\n"
                 f"<b>Platform:</b> <code>{platform.system()} {platform.release()}</code>\n"

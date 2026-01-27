@@ -86,7 +86,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
         size = await db.get_size(mode)
     except Exception as e:
         logger.error(f"Failed to fetch settings from database: {e}")
-        await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
+        await message.reply_text("<blockquote expandable>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")
         return None
 
     # Get total frames and fps using ffprobe (best-effort)
@@ -453,7 +453,7 @@ async def convert_video(video_file, output_directory, total_time, bot, message, 
     else:
         logger.error("No output file created")
         try:
-            await message.reply_text("<blockquote>Error: Encoding failed. No output file created.</blockquote>")
+            await message.reply_text("<blockquote expandable>Error: Encoding failed. No output file created.</blockquote>")
         except Exception:
             pass
         return None

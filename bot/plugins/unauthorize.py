@@ -14,13 +14,13 @@ async def unauthorize_user(client, message):
             target = None
 
     if target is None:
-        await message.reply_text("<blockquote>Please reply to a user or provide an ID to unauthorize.</blockquote>")
+        await message.reply_text("<blockquote expandable>Please reply to a user or provide an ID to unauthorize.</blockquote>")
         return
 
     try:
         await db.remove_auth_user(target)
         if target in AUTH_USERS:
             AUTH_USERS.remove(target)
-        await message.reply_text(f"<blockquote>Unauthorized Successfully: {target}</blockquote>")
+        await message.reply_text(f"<blockquote expandable>Unauthorized Successfully: {target}</blockquote>")
     except Exception as e:
-        await message.reply_text(f"<blockquote>Error: {str(e)}</blockquote>")
+        await message.reply_text(f"<blockquote expandable>Error: {str(e)}</blockquote>")

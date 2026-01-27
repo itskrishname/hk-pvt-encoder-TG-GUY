@@ -20,6 +20,6 @@ async def authorize_user(client, message):
         await db.add_auth_user(target)
         if target not in AUTH_USERS:
             AUTH_USERS.append(target)
-        await message.reply_text(f"<blockquote>Authorized Successfully: {target}</blockquote>")
+        await message.reply_text(f"<blockquote expandable>Authorized Successfully: {target}</blockquote>")
     except Exception as e:
-        await message.reply_text(f"<blockquote>Error: {str(e)}</blockquote>")
+        await message.reply_text(f"<blockquote expandable>Error: {str(e)}</blockquote>")
