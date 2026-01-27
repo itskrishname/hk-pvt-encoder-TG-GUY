@@ -502,9 +502,6 @@ async def restarter(app, message):
 # ------------------- VIDEO / DOCUMENT -------------------
 @app.on_message(filters.incoming & (filters.video | filters.document))    
 async def help_message(app, message):
-    chat_id = message.chat.id if message.chat else None
-    if chat_id not in AUTH_USERS:
-        return await message.reply_text("<blockquote expandable>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
     # Instead of starting immediately, show quality options
     await incoming_start_message_f(app, message, quality_check=True)
 

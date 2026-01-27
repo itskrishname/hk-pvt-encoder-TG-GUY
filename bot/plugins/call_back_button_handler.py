@@ -54,26 +54,23 @@ async def button(bot, update: CallbackQuery):
             await update.answer("Not Authorized", show_alert=True)
 
     elif cb_data.startswith("enc_"):
-        if user_id in AUTH_USERS:
-            mode_map = {
-                "enc_480": "480p",
-                "enc_720": "720p",
-                "enc_1080": "1080p"
-            }
-            mode = mode_map.get(cb_data)
-            if mode:
-                # Pass the original message (reply_to_message) which contains the file
-                # We need to call process_encoding with the original message
-                original_message = update.message.reply_to_message
-                if original_message:
-                    await update.message.edit_text(f"Queueing for {mode}...")
-                    data.append((original_message, mode))
-                    if len(data) == 1:
-                            await add_task(original_message, mode)
-                else:
-                    await update.message.edit_text("Original message not found (maybe deleted?). cannot queue.")
-        else:
-            await update.answer("Not Authorized", show_alert=True)
+        mode_map = {
+            "enc_480": "480p",
+            "enc_720": "720p",
+            "enc_1080": "1080p"
+        }
+        mode = mode_map.get(cb_data)
+        if mode:
+            # Pass the original message (reply_to_message) which contains the file
+            # We need to call process_encoding with the original message
+            original_message = update.message.reply_to_message
+            if original_message:
+                await update.message.edit_text(f"Queueing for {mode}...")
+                data.append((original_message, mode))
+                if len(data) == 1:
+                        await add_task(original_message, mode)
+            else:
+                await update.message.edit_text("Original message not found (maybe deleted?). cannot queue.")
 
     elif cb_data.startswith("edit_"):
         if user_id in AUTH_USERS:
