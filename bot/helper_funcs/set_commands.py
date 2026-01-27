@@ -10,6 +10,8 @@ async def set_bot_commands(client: Client):
         BotCommand("sysinfo", "View system info (Admin)"),
         BotCommand("speedtest", "Run Speedtest (Admin)"),
         BotCommand("auth", "Authorize user (Admin)"),
+        BotCommand("unauth", "Unauthorize user (Admin)"),
+        BotCommand("list", "List active tasks (Admin)"),
         BotCommand("update", "Update the bot (Admin)"),
         BotCommand("restart", "Restart the bot (Admin)"),
         BotCommand("log", "Get log file (Admin)"),

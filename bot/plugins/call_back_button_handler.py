@@ -79,13 +79,24 @@ async def button(bot, update: CallbackQuery):
 
         elif cb_data.startswith("edit_"):
             if update.from_user.id in AUTH_USERS:
-                # edit_crf_720p or edit_crf
-                parts = cb_data.split("_")
-                # parts[0] = edit
-                # parts[1] = setting name (e.g. crf)
-                # parts[2] = mode (optional, e.g. 720p)
-                setting = parts[1]
-                mode = parts[2] if len(parts) > 2 else None
+                # edit_crf_720p or edit_crf or edit_audio_b_1080p
+                raw_setting = cb_data[5:] # Remove "edit_"
+
+                mode = None
+                setting = raw_setting
+
+                if raw_setting.endswith("_720p"):
+                    mode = "720p"
+                    setting = raw_setting[:-6] # Remove "_720p" (length 5) -> wait, "_720p" length is 5
+                elif raw_setting.endswith("_1080p"):
+                    mode = "1080p"
+                    setting = raw_setting[:-7] # Remove "_1080p" (length 6) -> wait, "_1080p" len 6
+
+                # Double check length stripping
+                if mode == "720p":
+                     setting = raw_setting[:-5]
+                elif mode == "1080p":
+                     setting = raw_setting[:-6]
 
                 user_states[update.from_user.id] = {"setting": setting, "mode": mode}
                 mode_str = mode if mode else "default/480p"

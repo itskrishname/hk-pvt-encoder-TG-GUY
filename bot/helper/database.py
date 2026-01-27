@@ -132,6 +132,12 @@ class Database:
             {"$addToSet": {"users": user_id}},
             upsert=True
         )
+
+    async def remove_auth_user(self, user_id):
+        await self.collection.update_one(
+            {"_id": "auth_users"},
+            {"$pull": {"users": user_id}}
+        )
             
 
 db = Database()
