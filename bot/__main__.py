@@ -48,6 +48,7 @@ import bot.plugins.update
 import bot.plugins.authorize
 import bot.plugins.unauthorize
 import bot.plugins.list
+import bot.plugins.speedtest
 from bot.helper.database import db
 from pyrogram.errors import FloodWait
 from pymongo.errors import PyMongoError
@@ -507,47 +508,6 @@ async def help_message(app, message):
     # Instead of starting immediately, show quality options
     await incoming_start_message_f(app, message, quality_check=True)
 
-# ------------------- STATE HANDLER -------------------
-@app.on_message(filters.text & ~filters.command(list(filter(lambda x: x.startswith("/"), ["/"]))))
-async def state_handler(client, message):
-    user_id = message.from_user.id if message.from_user else None
-    if user_id and user_id in user_states:
-        state = user_states[user_id]
-        setting = state["setting"]
-        mode = state["mode"]
-        text = message.text or message.caption or ""
-        value = text.strip()
-
-        try:
-            if setting == "crf":
-                await db.set_crf(int(value), mode)
-            elif setting == "resolution":
-                await db.set_resolution(value, mode)
-            elif setting == "preset":
-                await db.set_preset(value, mode)
-            elif setting == "audio_b":
-                await db.set_audio_b(value, mode)
-            elif setting == "video_codec":
-                await db.set_video_codec(value, mode)
-            elif setting == "audio_codec":
-                await db.set_audio_codec(value, mode)
-            elif setting == "bits":
-                if value not in ["8", "10"]:
-                    await message.reply_text("Bits must be either 8 or 10")
-                    return
-                await db.set_bits(value, mode)
-            elif setting == "watermark":
-                if value.strip().lower() in ["0", "none", ""]:
-                    await db.set_watermark(0, mode)
-                else:
-                    await db.set_watermark(value, mode)
-
-            mode_str = mode if mode else "default/480p"
-            await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
-            del user_states[user_id]
-        except Exception as e:
-            await message.reply_text(f"Error updating setting: {e}\n{traceback.format_exc()}")
-
 # ------------------- SYSINFO -------------------
 @app.on_message(filters.incoming & filters.command(["sysinfo", f"sysinfo@{BOT_USERNAME}"]))    
 async def help_message(app, message):
@@ -605,6 +565,47 @@ async def up(app, message):
     ms = (ed - stt).microseconds / 1000    
     p = f"Pɪɴɢ = {ms}ms "    
     await message.reply_text(u + "\n" + p)    
+
+# ------------------- STATE HANDLER -------------------
+@app.on_message(filters.text & ~filters.regex(r"^/"))
+async def state_handler(client, message):
+    user_id = message.from_user.id if message.from_user else None
+    if user_id and user_id in user_states:
+        state = user_states[user_id]
+        setting = state["setting"]
+        mode = state["mode"]
+        text = message.text or message.caption or ""
+        value = text.strip()
+
+        try:
+            if setting == "crf":
+                await db.set_crf(int(value), mode)
+            elif setting == "resolution":
+                await db.set_resolution(value, mode)
+            elif setting == "preset":
+                await db.set_preset(value, mode)
+            elif setting == "audio_b":
+                await db.set_audio_b(value, mode)
+            elif setting == "video_codec":
+                await db.set_video_codec(value, mode)
+            elif setting == "audio_codec":
+                await db.set_audio_codec(value, mode)
+            elif setting == "bits":
+                if value not in ["8", "10"]:
+                    await message.reply_text("Bits must be either 8 or 10")
+                    return
+                await db.set_bits(value, mode)
+            elif setting == "watermark":
+                if value.strip().lower() in ["0", "none", ""]:
+                    await db.set_watermark(0, mode)
+                else:
+                    await db.set_watermark(value, mode)
+
+            mode_str = mode if mode else "default/480p"
+            await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
+            del user_states[user_id]
+        except Exception as e:
+            await message.reply_text(f"Error updating setting: {e}\n{traceback.format_exc()}")
 
 # ----------------------------------------------------------------------
 # Callback button handler
