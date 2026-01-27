@@ -129,7 +129,7 @@ async def changecrf(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /crf: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -156,7 +156,7 @@ async def changer(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /resolution: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -183,7 +183,7 @@ async def changepr(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /preset: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -210,7 +210,7 @@ async def changevcodec(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /v_codec: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -237,7 +237,7 @@ async def changeacodec(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /a_codec: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -264,7 +264,7 @@ async def changeab(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /audio_b: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -295,7 +295,7 @@ async def changevbitrate(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /v_bitrate: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -325,7 +325,7 @@ async def changebits(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /bits: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")     
@@ -357,7 +357,7 @@ async def changewatermark(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /watermark: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -386,7 +386,7 @@ async def changecrf(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /size: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
@@ -454,7 +454,7 @@ async def settings(app, message):
             await asyncio.sleep(e.value)    
             await message.reply_text("<blockquote>Rate limit hit, please try again shortly.</blockquote>")    
         except Exception as e:    
-            await message.reply_text("<blockquote>An unexpected error occurred. Please try again.</blockquote>")    
+            await message.reply_text(f"<blockquote>An unexpected error occurred: {e}</blockquote>")
             logger.error(f"Unexpected error in /settings: {e}\n{traceback.format_exc()}")
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
