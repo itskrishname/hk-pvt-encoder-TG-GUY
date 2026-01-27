@@ -22,18 +22,10 @@ logging.basicConfig(
 )
 LOGGER = logging.getLogger(__name__)
 
-#from bot.helper_funcs.admin_check import AdminCheck
-
-
 async def button(bot, update: CallbackQuery):
     cb_data = update.data
-    try:
-        g = await AdminCheck(bot, update.message.chat.id, update.from_user.id)
-        print(g)
-    except:
-        pass
     LOGGER.info(update.message.reply_to_message.from_user.id)
-    if (update.from_user.id == update.message.reply_to_message.from_user.id) or g:
+    if (update.from_user.id == update.message.reply_to_message.from_user.id):
         print(cb_data)
 
         if cb_data == "log_file":
