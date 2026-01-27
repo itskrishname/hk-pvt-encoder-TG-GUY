@@ -60,7 +60,7 @@ async def exec_message_f(client, message):
         else:
             _o = o.split("\n")
             o = "`\n".join(_o)
-        OUTPUT = f"<blockquote>**QUERY:**\n__Command:__\n`{cmd}` \n__PID:__\n`{process.pid}`\n\n**stderr:** \n`{e}`\n**Output:**\n{o}</blockquote>"
+        OUTPUT = f"<blockquote expandable>**QUERY:**\n__Command:__\n`{cmd}` \n__PID:__\n`{process.pid}`\n\n**stderr:** \n`{e}`\n**Output:**\n{o}</blockquote>"
 
         if len(OUTPUT) > MAX_MESSAGE_LENGTH:
             with open("exec.text", "w+", encoding="utf8") as out_file:
@@ -114,7 +114,7 @@ async def eval_message_f(client, message):
             evaluation = "Success"
 
         final_output = (
-            "<blockquote><b>EVAL</b>: <code>{}</code>\n\n<b>OUTPUT</b>:\n<code>{}</code> \n</blockquote>".format(
+            "<blockquote expandable><b>EVAL</b>: <code>{}</code>\n\n<b>OUTPUT</b>:\n<code>{}</code> \n</blockquote>".format(
                 cmd, evaluation.strip()
             )
         )

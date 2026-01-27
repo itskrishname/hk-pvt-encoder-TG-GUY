@@ -65,25 +65,25 @@ def parse_timecode(tc: str) -> float:
     return None
 
 # ---------- convert_video (fixed) ----------
-async def convert_video(video_file, output_directory, total_time, bot, message, chan_msg):
+async def convert_video(video_file, output_directory, total_time, bot, message, chan_msg, mode=None):
     # Extract file name and extension
     kk = video_file.split("/")[-1]
     aa = kk.split(".")[-1] if "." in kk else ""
-    out_put_file_name = kk.replace(f".{aa}", "[@Itsme123c].mkv") if aa else kk + "[@Itsme123c].mkv"
+    out_put_file_name = kk.replace(f".{aa}", "[@Lord_Vasudev_Krishna].mkv") if aa else kk + "[@Lord_Vasudev_Krishna].mkv"
     out_put_fullpath = os.path.join(output_directory, out_put_file_name)
 
-    # Fetch settings from database
+    # Fetch settings from database using mode
     try:
-        crf = await db.get_crf()
-        preset = await db.get_preset()
-        resolution = await db.get_resolution()
-        audio_b = await db.get_audio_b()
-        audio_codec = await db.get_audio_codec()
-        video_codec = await db.get_video_codec()
-        video_bitrate = await db.get_video_bitrate()
-        watermark = await db.get_watermark()
-        bits = await db.get_bits()
-        size = await db.get_size()
+        crf = await db.get_crf(mode)
+        preset = await db.get_preset(mode)
+        resolution = await db.get_resolution(mode)
+        audio_b = await db.get_audio_b(mode)
+        audio_codec = await db.get_audio_codec(mode)
+        video_codec = await db.get_video_codec(mode)
+        video_bitrate = await db.get_video_bitrate(mode)
+        watermark = await db.get_watermark(mode)
+        bits = await db.get_bits(mode)
+        size = await db.get_size(mode)
     except Exception as e:
         logger.error(f"Failed to fetch settings from database: {e}")
         await message.reply_text("<blockquote>Database error: Could not fetch encoding settings. Please try again later.</blockquote>")

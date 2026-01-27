@@ -36,6 +36,7 @@ preset = []
 codec = []
 # senpai I am changing app string WHY???????
 pid_list = []
+user_states = {}
 app = Client(
         SESSION_NAME,
         bot_token=TG_BOT_TOKEN,

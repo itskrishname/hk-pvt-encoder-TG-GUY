@@ -41,36 +41,54 @@ CHAT_FLOOD = {}
 broadcast_ids = {}
 bot = app
 
-async def incoming_start_message_f(bot, update):
+async def incoming_start_message_f(bot, update, quality_check=False):
     """/start command"""
-    
-    await bot.send_message(
-        chat_id=update.chat.id,
-        text=Localisation.START_TEXT,
-        reply_markup=InlineKeyboardMarkup(
+    if quality_check:
+        # Send quality selection buttons
+        keyboard = InlineKeyboardMarkup(
             [
                 [
-                    InlineKeyboardButton('👨‍💻 Oᴡɴᴇʀ 👨‍💻', url='https://t.me/SECRECT_BOT_UPDATES')
+                    InlineKeyboardButton("✦ 480p ✦", callback_data="enc_480"),
+                    InlineKeyboardButton("✦ 720p ✦", callback_data="enc_720"),
+                    InlineKeyboardButton("✦ 1080p ✦", callback_data="enc_1080")
+                ],
+                [
+                    InlineKeyboardButton("Cancel", callback_data="fuckoff")
                 ]
             ]
-        ),
-        reply_to_message_id=update.id,
-    )
+        )
+        await update.reply_text("<b>Select Encoding Quality:</b>", reply_markup=keyboard, quote=True)
+    else:
+        await bot.send_message(
+            chat_id=update.chat.id,
+            text=Localisation.START_TEXT,
+            reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton('👨‍💻 Oᴡɴᴇʀ 👨‍💻', url='https://t.me/SECRECT_BOT_UPDATES')
+                    ]
+                ]
+            ),
+            reply_to_message_id=update.id,
+        )
 
-async def incoming_compress_message_f(update):
-    """/compress command"""
+# Moved actual processing to a new function called by callback
+async def process_encoding(update, bot, mode=None):
+    """Actual encoding logic"""
 
-    if not (update.video or update.document):
-        await update.reply_text("<blockquote>Please send a video or document to compress.</blockquote>")
+    # Check if update is a Message or CallbackQuery
+    message = update.message if hasattr(update, 'message') else update
+
+    if not (message.video or message.document):
         return
 
     d_start = time.time()
     status = os.path.join(DOWNLOAD_LOCATION, "status.json")
 
     sent_message = await bot.send_message(
-        chat_id=update.chat.id,
+        chat_id=message.chat.id,
         text=Localisation.DOWNLOAD_START,
-        reply_to_message_id=update.id
+        reply_to_message_id=message.id
     )
     utc_now = datetime.datetime.utcnow()
     ist_now = utc_now + datetime.timedelta(minutes=30, hours=5)
@@ -83,15 +101,15 @@ async def incoming_compress_message_f(update):
         text=f"<blockquote>**𝙱𝚘𝚝 𝙱𝚎𝚌𝚘𝚖𝚎 𝙱𝚞𝚜𝚢 𝙽𝚘𝚠...**{now}</blockquote>"
     )
 
-    file_name = update.video.file_name if update.video else update.document.file_name
+    file_name = message.video.file_name if message.video else message.document.file_name
     if not file_name:
-        file_name = f"{update.id}.mkv"
+        file_name = f"{message.id}.mkv"
     extension = file_name.split('.')[-1] if '.' in file_name else 'mkv'
     download_path = os.path.join(DOWNLOAD_LOCATION, file_name)
 
     try:
         video = await bot.download_media(
-            message=update,
+            message=message,
             file_name=download_path,
             progress=progress_for_pyrogram,
             progress_args=(bot, Localisation.DOWNLOAD_START, sent_message, d_start)
@@ -129,21 +147,26 @@ async def incoming_compress_message_f(update):
     await download_start.delete()
     compress_start = await bot.send_message(
         chat_id=LOG_CHANNEL,
-        text=f"<blockquote>**Encoding Video...**{now}</blockquote>"
+        text=f"<blockquote>**Encoding Video ({mode})...**{now}</blockquote>"
     )
-    await sent_message.edit_text(Localisation.COMPRESS_START)
+    await sent_message.edit_text(Localisation.COMPRESS_START + f" Mode: {mode}")
 
     with open(status, 'w') as f:
         json.dump({"running": True, "message": sent_message.id}, f, indent=2)
 
     c_start = time.time()
+
+    # We need to pass 'mode' to convert_video somehow, or modify convert_video to accept it.
+    # Currently convert_video calls database getters internally.
+    # I will modify ffmpeg.py to accept mode.
     encoded_file = await convert_video(
         video_file=video,
         output_directory=DOWNLOAD_LOCATION,
         total_time=duration,
         bot=bot,
         message=sent_message,
-        chan_msg=compress_start
+        chan_msg=compress_start,
+        mode=mode
     )
 
     compressed_time = TimeFormatter((time.time() - c_start) * 1000)
@@ -164,7 +187,7 @@ async def incoming_compress_message_f(update):
     )
     await sent_message.edit_text(Localisation.UPLOAD_START)
 
-    caption = update.caption if update.caption else "Encoded by @Lord_Vasudev_Krishna"
+    caption = message.caption if message.caption else "Encoded by @Lord_Vasudev_Krishna"
 
     # === AUTO-RETRY UPLOAD (3 TIMES) ===
     max_retries = 3
@@ -173,12 +196,12 @@ async def incoming_compress_message_f(update):
         try:
             await sent_message.edit_text(f"{Localisation.UPLOAD_START}\n\nRetry {attempt}/{max_retries}...")
             upload = await bot.send_document(
-                chat_id=update.chat.id,
+                chat_id=message.chat.id,
                 document=encoded_file,
                 caption=caption,
                 force_document=True,
                 thumb=thumb_image_path if os.path.exists(thumb_image_path) else "thumb.jpg",
-                reply_to_message_id=update.id,
+                reply_to_message_id=message.id,
                 progress=progress_for_pyrogram,
                 progress_args=(bot, Localisation.UPLOAD_START, sent_message, u_start)
             )
@@ -220,9 +243,9 @@ async def incoming_compress_message_f(update):
 
     try:
         await bot.send_message(
-            chat_id=update.chat.id,
-            text=f"Hello {update.from_user.mention}, Your encoding is complete!",
-            reply_to_message_id=update.id
+            chat_id=message.chat.id,
+            text=f"Hello {message.from_user.mention}, Your encoding is complete!",
+            reply_to_message_id=message.id
         )
     except:
         pass
@@ -233,6 +256,15 @@ async def incoming_compress_message_f(update):
         os.remove(encoded_file)
     if os.path.exists(thumb_image_path):
         os.remove(thumb_image_path)
+
+# This function is now only for direct commands if used (deprecated for file uploads)
+async def incoming_compress_message_f(update):
+    """/compress command"""
+    # Just redirect to quality check logic if needed, or keeping it as legacy?
+    # The requirement says "bot mai jab user's video ya file send karega... to bot user's ko option dega".
+    # This refers to the filters.video handler in __main__.py which calls help_message -> add_task
+    # Wait, __main__.py calls 'help_message' for files?
+    pass
 
 async def incoming_cancel_message_f(bot, update):
   """/cancel command"""

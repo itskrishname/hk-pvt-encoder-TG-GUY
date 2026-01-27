@@ -7,8 +7,8 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 LOGGER = logging.getLogger(__name__)
 
 import os, asyncio, pyrogram, psutil, platform, time
-from bot import data
-from bot.plugins.incoming_message_fn import incoming_compress_message_f
+from bot import data, app
+from bot.plugins.incoming_message_fn import process_encoding
 from pyrogram.types import Message
 import psutil
 import subprocess
@@ -32,14 +32,17 @@ def hbs(size):
     return str(round(size, 2)) + " " + dict_power_n[raised_to_pow] + "B"
 
 async def on_task_complete():
-    del data[0]
+    if data:
+        del data[0]
     if len(data) > 0:
-      await add_task(data[0])
+        # data[0] is (message, mode)
+        msg, mode = data[0]
+        await add_task(msg, mode)
 
-async def add_task(message: Message):
+async def add_task(message: Message, mode=None):
     try:
         os.system('rm -rf /app/downloads/*')
-        await incoming_compress_message_f(message)
+        await process_encoding(message, app, mode)
     except Exception as e:
         LOGGER.info(e)  
     await on_task_complete()

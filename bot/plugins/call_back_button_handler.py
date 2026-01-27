@@ -5,7 +5,8 @@ from bot import (
     LOG_CHANNEL,
     data,
     pid_list,
-    LOG_FILE_ZZGEVC
+    LOG_FILE_ZZGEVC,
+    user_states
 )
 from pyrogram.types import CallbackQuery
 import datetime
@@ -13,6 +14,8 @@ import logging
 import os, signal
 import json
 import shutil
+from bot.plugins.incoming_message_fn import process_encoding, bot
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -52,6 +55,43 @@ async def button(bot, update: CallbackQuery):
             else:
                 await update.answer("Not Authorized", show_alert=True)
 
+        elif cb_data.startswith("enc_"):
+            if update.from_user.id in AUTH_USERS:
+                mode_map = {
+                    "enc_480": "480p",
+                    "enc_720": "720p",
+                    "enc_1080": "1080p"
+                }
+                mode = mode_map.get(cb_data)
+                if mode:
+                    await update.message.edit_text(f"Queueing for {mode}...")
+                    # Pass the original message (reply_to_message) which contains the file
+                    # We need to call process_encoding with the original message
+                    original_message = update.message.reply_to_message
+                    if original_message:
+                        data.append((original_message, mode))
+                        if len(data) == 1:
+                             await add_task(original_message, mode)
+                    else:
+                        await update.message.edit_text("Original message not found.")
+            else:
+                await update.answer("Not Authorized", show_alert=True)
+
+        elif cb_data.startswith("edit_"):
+            if update.from_user.id in AUTH_USERS:
+                # edit_crf_720p or edit_crf
+                parts = cb_data.split("_")
+                # parts[0] = edit
+                # parts[1] = setting name (e.g. crf)
+                # parts[2] = mode (optional, e.g. 720p)
+                setting = parts[1]
+                mode = parts[2] if len(parts) > 2 else None
+
+                user_states[update.from_user.id] = {"setting": setting, "mode": mode}
+                mode_str = mode if mode else "default/480p"
+                await update.message.reply_text(f"Send new value for {setting} ({mode_str}):")
+            else:
+                await update.answer("Not Authorized", show_alert=True)
 
         elif cb_data == "fuckingdo":
             if update.from_user.id in AUTH_USERS:

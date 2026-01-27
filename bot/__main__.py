@@ -26,7 +26,8 @@ from bot import (
     BOT_USERNAME,
     SESSION_NAME,
     data,
-    app
+    app,
+    user_states
 )
 from bot.helper_funcs.utils import add_task, on_task_complete, sysinfo
 from bot.helper_funcs.set_commands import set_bot_commands
@@ -92,15 +93,25 @@ incoming_start_message_handler = MessageHandler(
 )    
 app.add_handler(incoming_start_message_handler)    
 
+# --- Helper to parse command suffix ---
+def get_mode_from_command(command_str):
+    if command_str.endswith("1"):
+        return "720p"
+    if command_str.endswith("2"):
+        return "1080p"
+    return None
+
 # ------------------- CRF -------------------
-@app.on_message(filters.incoming & filters.command(["crf", f"crf@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["crf", "crf1", "crf2"]))
 async def changecrf(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             cr = message.text.split(" ", maxsplit=1)[1]    
             cr_int = int(cr)    
-            await db.set_crf(cr_int)    
-            OUT = f"<blockquote>I will be using : {cr} crf</blockquote>"    
+            await db.set_crf(cr_int, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {cr} crf for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a CRF value, e.g., /crf 24</blockquote>")    
@@ -119,13 +130,15 @@ async def changecrf(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- RESOLUTION -------------------
-@app.on_message(filters.incoming & filters.command(["resolution", f"resolution@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["resolution", "resolution1", "resolution2"]))
 async def changer(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             res = message.text.split(" ", maxsplit=1)[1]    
-            await db.set_resolution(res)    
-            OUT = f"<blockquote>I will be using : {res} </blockquote>"    
+            await db.set_resolution(res, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {res} for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a resolution value, e.g., /resolution 640x360</blockquote>")    
@@ -142,13 +155,15 @@ async def changer(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- PRESET -------------------
-@app.on_message(filters.incoming & filters.command(["preset", f"preset@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["preset", "preset1", "preset2"]))
 async def changepr(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             preset_val = message.text.split(" ", maxsplit=1)[1]    
-            await db.set_preset(preset_val)    
-            OUT = f"<blockquote>I will be using : {preset_val} preset</blockquote>"    
+            await db.set_preset(preset_val, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {preset_val} preset for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a preset value, e.g., /preset veryfast</blockquote>")    
@@ -165,13 +180,15 @@ async def changepr(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- V_CODEC -------------------
-@app.on_message(filters.incoming & filters.command(["v_codec", f"v_codec@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["v_codec", "v_codec1", "v_codec2"]))
 async def changevcodec(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             codec_val = message.text.split(" ", maxsplit=1)[1]    
-            await db.set_video_codec(codec_val)    
-            OUT = f"<blockquote>I will be using : {codec_val} video codec</blockquote>"    
+            await db.set_video_codec(codec_val, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {codec_val} video codec for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a video codec value, e.g., /v_codec libx264</blockquote>")    
@@ -188,13 +205,15 @@ async def changevcodec(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- A_CODEC -------------------
-@app.on_message(filters.incoming & filters.command(["a_codec", f"a_codec@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["a_codec", "a_codec1", "a_codec2"]))
 async def changeacodec(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             codec_val = message.text.split(" ", maxsplit=1)[1]    
-            await db.set_audio_codec(codec_val)    
-            OUT = f"<blockquote>I will be using : {codec_val} audio codec</blockquote>"    
+            await db.set_audio_codec(codec_val, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {codec_val} audio codec for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide an audio codec value, e.g., /a_codec aac</blockquote>")    
@@ -211,13 +230,15 @@ async def changeacodec(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- AUDIO_B -------------------
-@app.on_message(filters.incoming & filters.command(["audio_b", f"audio_b@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["audio_b", "audio_b1", "audio_b2"]))
 async def changeab(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             aud = message.text.split(" ", maxsplit=1)[1]    
-            await db.set_audio_b(aud)    
-            OUT = f"<blockquote>I will be using : {aud} audio bitrate</blockquote>"    
+            await db.set_audio_b(aud, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {aud} audio bitrate for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide an audio bitrate value, e.g., /audio_b 64k</blockquote>")    
@@ -234,15 +255,17 @@ async def changeab(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- V_BITRATE -------------------
-@app.on_message(filters.incoming & filters.command(["v_bitrate", f"v_bitrate@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["v_bitrate", "v_bitrate1", "v_bitrate2"]))
 async def changevbitrate(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             br = message.text.split(" ", maxsplit=1)[1]    
             br_int = int(br)    
-            await db.set_video_bitrate(br_int)    
+            await db.set_video_bitrate(br_int, mode)
             display = "no video bitrate (auto)" if br_int == 0 else f"{br_int}"    
-            OUT = f"<blockquote>I will be using : {display} video bitrate</blockquote>"    
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {display} video bitrate for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a video bitrate value, e.g., /v_bitrate 1000 (or 0 for none/auto)</blockquote>")    
@@ -261,16 +284,18 @@ async def changevbitrate(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
 # ------------------- BITS -------------------
-@app.on_message(filters.incoming & filters.command(["bits", f"bits@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["bits", "bits1", "bits2"]))
 async def changebits(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             bits_val = message.text.split(" ", maxsplit=1)[1]    
             if bits_val not in ["8", "10"]:    
                 await message.reply_text("<blockquote>Bits must be either 8 or 10, e.g., /bits 10</blockquote>")    
                 return    
-            await db.set_bits(bits_val)    
-            OUT = f"<blockquote>I will be using : {bits_val}-bit video encoding</blockquote>"    
+            await db.set_bits(bits_val, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {bits_val}-bit video encoding for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a bits value, e.g., /bits 10</blockquote>")    
@@ -287,17 +312,20 @@ async def changebits(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")     
 
 # ------------------- WATERMARK -------------------
-@app.on_message(filters.incoming & filters.command(["watermark", f"watermark@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["watermark", "watermark1", "watermark2"]))
 async def changewatermark(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             wm = message.text.split(" ", maxsplit=1)[1]    
             if wm.strip().lower() in ["0", "none", ""]:    
-                await db.set_watermark(0)    
-                OUT = f"<blockquote>I will be using : no watermark</blockquote>"    
+                await db.set_watermark(0, mode)
+                mode_str = mode if mode else "default/480p"
+                OUT = f"<blockquote>I will be using : no watermark for {mode_str}</blockquote>"
             else:    
-                await db.set_watermark(wm)    
-                OUT = f"<blockquote>I will be using : {wm} as watermark</blockquote>"    
+                await db.set_watermark(wm, mode)
+                mode_str = mode if mode else "default/480p"
+                OUT = f"<blockquote>I will be using : {wm} as watermark for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a watermark value, e.g., /watermark My Text Here (or 0/none for no watermark)</blockquote>")    
@@ -313,14 +341,16 @@ async def changewatermark(app, message):
     else:    
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
 
-@app.on_message(filters.incoming & filters.command(["size", f"size@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["size", "size1", "size2"]))
 async def changecrf(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = get_mode_from_command(message.command[0])
         try:    
             wm_size = message.text.split(" ", maxsplit=1)[1]    
             wm_int = int(wm_size)    
-            await db.set_size(wm_int)    
-            OUT = f"<blockquote>I will be using : {wm_size} for watermark text size</blockquote>"    
+            await db.set_size(wm_int, mode)
+            mode_str = mode if mode else "default/480p"
+            OUT = f"<blockquote>I will be using : {wm_size} for watermark text size for {mode_str}</blockquote>"
             await message.reply_text(OUT)    
         except IndexError:    
             await message.reply_text("<blockquote>Please provide a size value, e.g., /size 24</blockquote>")    
@@ -339,26 +369,33 @@ async def changecrf(app, message):
         await message.reply_text("<blockquote>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")    
     
 # ------------------- SETTINGS -------------------
-@app.on_message(filters.incoming & filters.command(["settings", f"settings@{BOT_USERNAME}"]))    
+@app.on_message(filters.incoming & filters.command(["settings", "settings1", "settings2"]))
 async def settings(app, message):    
-    if message.from_user.id in AUTH_USERS:    
+    if message.from_user.id in AUTH_USERS:
+        mode = None
+        if message.command[0].endswith("1"):
+            mode = "720p"
+        elif message.command[0].endswith("2"):
+            mode = "1080p"
+
         try:    
-            crf_val = await db.get_crf()    
-            preset_val = await db.get_preset()    
-            resolution_val = await db.get_resolution()    
-            audio_b_val = await db.get_audio_b()    
-            audio_codec_val = await db.get_audio_codec()    
-            video_codec_val = await db.get_video_codec()    
-            video_bitrate_val = await db.get_video_bitrate()    
-            watermark_val = await db.get_watermark()    
-            bits_val = await db.get_bits()
-            size_val = await db.get_size()
+            crf_val = await db.get_crf(mode)
+            preset_val = await db.get_preset(mode)
+            resolution_val = await db.get_resolution(mode)
+            audio_b_val = await db.get_audio_b(mode)
+            audio_codec_val = await db.get_audio_codec(mode)
+            video_codec_val = await db.get_video_codec(mode)
+            video_bitrate_val = await db.get_video_bitrate(mode)
+            watermark_val = await db.get_watermark(mode)
+            bits_val = await db.get_bits(mode)
+            size_val = await db.get_size(mode)
 
             video_bitrate_display = "Auto/None" if video_bitrate_val is None else f"{video_bitrate_val}"    
-            watermark_display = "None" if watermark_val is None else f"{watermark_val}"    
+            watermark_display = "None" if watermark_val is None else f"{watermark_val}"
+            mode_display = mode if mode else "480p (Default)"
 
             reply_text = (    
-                f"<b>Tʜᴇ Cᴜʀʀᴇɴᴛ Sᴇᴛᴛɪɴɢꜱ ᴡɪʟʟ ʙᴇ Aᴅᴅᴇᴅ Yᴏᴜʀ Vɪᴅᴇᴏ Fɪʟᴇ:</b>\n"    
+                f"<b>Tʜᴇ Cᴜʀʀᴇɴᴛ Sᴇᴛᴛɪɴɢꜱ ᴡɪʟʟ ʙᴇ Aᴅᴅᴇᴅ Yᴏᴜʀ Vɪᴅᴇᴏ Fɪʟᴇ ({mode_display}):</b>\n"
                 f"<blockquote><b>Video Codec</b> : <code>{video_codec_val}</code> \n"    
                 f"<b>Audio Codec</b> : <code>{audio_codec_val}</code> \n"    
                 f"<b>Crf</b> : <code>{crf_val}</code> \n"    
@@ -371,7 +408,21 @@ async def settings(app, message):
                 f"<b>WM Size</b> : <code>{size_val}</code> \n"
                 f"<b>The Ability to Change Settings is Only for Admin</b>"    
             )    
-            await message.reply_text(reply_text)    
+
+            # Interactive buttons
+            m_suffix = f"_{mode}" if mode else ""
+            keyboard = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton("Edit CRF", callback_data=f"edit_crf{m_suffix}"),
+                    InlineKeyboardButton("Edit Resolution", callback_data=f"edit_resolution{m_suffix}")
+                ],
+                [
+                    InlineKeyboardButton("Edit Preset", callback_data=f"edit_preset{m_suffix}"),
+                    InlineKeyboardButton("Edit Audio Bitrate", callback_data=f"edit_audio_b{m_suffix}")
+                ]
+            ])
+
+            await message.reply_text(reply_text, reply_markup=keyboard)
         except PyMongoError as e:    
             await message.reply_text("<blockquote>Database error: Could not retrieve settings. Please try again later.</blockquote>")    
             logger.error(f"DB Error in /settings: {e}")    
@@ -390,10 +441,10 @@ async def help_message(app, message):
     if message.chat.id not in AUTH_USERS:    
         return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
     query = await message.reply_text("Aᴅᴅᴇᴅ Tᴏ Qᴜᴇᴜᴇ...\nPʟᴇᴀꜱᴇ ʙᴇ Pᴀᴛɪᴇɴᴛ, Cᴏᴍᴘʀᴇꜱꜱ ᴡɪʟʟ Sᴛᴀʀᴛ Sᴏᴏɴ", quote=True)    
-    data.append(message.reply_to_message)    
+    data.append((message.reply_to_message, None))
     if len(data) == 1:    
         await query.delete()       
-        await add_task(message.reply_to_message)         
+        await add_task(message.reply_to_message, None)
 
 # ------------------- RESTART -------------------
 @app.on_message(filters.incoming & filters.command(["restart", f"restart@{BOT_USERNAME}"]))    
@@ -416,12 +467,34 @@ async def restarter(app, message):
 @app.on_message(filters.incoming & (filters.video | filters.document))    
 async def help_message(app, message):    
     if message.chat.id not in AUTH_USERS:    
-        return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")    
-    query = await message.reply_text("Aᴅᴅᴇᴅ Tᴏ Qᴜᴇᴜᴇ...\nPʟᴇᴀꜱᴇ ʙᴇ Pᴀᴛɪᴇɴᴛ, Cᴏᴍᴘʀᴇꜱꜱ ᴡɪʟʟ Sᴛᴀʀᴛ Sᴏᴏɴ", quote=True)    
-    data.append(message)    
-    if len(data) == 1:    
-        await query.delete()       
-        await add_task(message)    
+        return await message.reply_text("<blockquote>Yᴏᴜ Aʀᴇ Nᴏᴛ Aᴜᴛʜᴏʀɪꜱᴇᴅ Tᴏ Uꜱᴇ Tʜɪꜱ Bᴏᴛ Cᴏɴᴛᴀᴄᴛ @Lord_Vasudev_Krishna</blockquote>")
+    # Instead of starting immediately, show quality options
+    await incoming_start_message_f(app, message, quality_check=True)
+
+# ------------------- STATE HANDLER -------------------
+@app.on_message(filters.text & ~filters.command(list(filter(lambda x: x.startswith("/"), ["/"]))))
+async def state_handler(client, message):
+    if message.from_user.id in user_states:
+        state = user_states[message.from_user.id]
+        setting = state["setting"]
+        mode = state["mode"]
+        value = message.text.strip()
+
+        try:
+            if setting == "crf":
+                await db.set_crf(int(value), mode)
+            elif setting == "resolution":
+                await db.set_resolution(value, mode)
+            elif setting == "preset":
+                await db.set_preset(value, mode)
+            elif setting == "audio_b":
+                await db.set_audio_b(value, mode)
+
+            mode_str = mode if mode else "default/480p"
+            await message.reply_text(f"Updated {setting} to {value} for {mode_str}")
+            del user_states[message.from_user.id]
+        except Exception as e:
+            await message.reply_text(f"Error updating setting: {e}")
 
 # ------------------- SYSINFO -------------------
 @app.on_message(filters.incoming & filters.command(["sysinfo", f"sysinfo@{BOT_USERNAME}"]))    
