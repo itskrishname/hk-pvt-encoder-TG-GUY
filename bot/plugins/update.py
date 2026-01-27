@@ -3,7 +3,6 @@ import sys
 import subprocess
 from datetime import datetime
 from pyrogram import filters
-import heroku3
 from bot import app, AUTH_USERS, BOT_USERNAME
 from bot.config import Config
 

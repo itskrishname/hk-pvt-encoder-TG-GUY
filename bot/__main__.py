@@ -14,7 +14,7 @@ import pyrogram
 import psutil
 from pyrogram import Client, filters
 from pyrogram.handlers import MessageHandler, CallbackQueryHandler
-from pyrogram.types import Message
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 from psutil import disk_usage, cpu_percent, virtual_memory, Process as psprocess
 
 from bot import (
