@@ -5,6 +5,7 @@ from datetime import datetime
 from pyrogram import filters
 from bot import app, AUTH_USERS, BOT_USERNAME
 from bot.config import Config
+import json
 
 def run_command(command):
     try:
@@ -136,6 +137,10 @@ async def update_bot(client, message):
 
         final_text = "» ʙᴏᴛ ᴜᴩᴅᴀᴛᴇᴅ sᴜᴄᴄᴇssғᴜʟʟʏ ! ɴᴏᴡ ᴡᴀɪᴛ ғᴏʀ ғᴇᴡ ᴍɪɴᴜᴛᴇs ᴜɴᴛɪʟ ᴛʜᴇ ʙᴏᴛ ʀᴇsᴛᴀʀᴛs ᴀɴᴅ ᴩᴜsʜ ᴄʜᴀɴɢᴇs !"
         await msg.edit(final_text)
+
+        # Save restart context
+        with open("restart_status.json", "w") as f:
+            json.dump({"chat_id": message.chat.id, "message_id": msg.id}, f)
 
         # Restart using os.execl (Preserves local file changes)
         os.execl(sys.executable, sys.executable, "-m", "bot")

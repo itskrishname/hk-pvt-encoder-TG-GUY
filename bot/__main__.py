@@ -485,8 +485,10 @@ async def help_message(app, message):
 async def restarter(app, message):
     user_id = message.from_user.id if message.from_user else None
     if user_id in AUTH_USERS:
-        await message.reply_text("Rᴇꜱᴛᴀʀᴛɪɴɢ...")    
-        quit(1)    
+        msg = await message.reply_text("Rᴇꜱᴛᴀʀᴛɪɴɢ...")
+        with open("restart_status.json", "w") as f:
+            json.dump({"chat_id": message.chat.id, "message_id": msg.id}, f)
+        os.execl(sys.executable, sys.executable, "-m", "bot")
     else:    
         await message.reply_text("<blockquote expandable>Aᴅᴍɪɴ Oɴʟʏ</blockquote>")
 
@@ -616,6 +618,27 @@ app.add_handler(call_back_button_handler)
 SUDO_ID = 7660990923   # keep as int
 
 async def send_startup_message():
+    # Check for restart context
+    try:
+        if os.path.exists("restart_status.json"):
+            with open("restart_status.json", "r") as f:
+                data = json.load(f)
+
+            chat_id = data.get("chat_id")
+
+            if chat_id:
+                try:
+                    await app.send_message(
+                        chat_id=chat_id,
+                        text="<blockquote expandable><b>Bot Restarted Successfully!</b>\n\nNow you can use me.</blockquote>"
+                    )
+                except Exception as e:
+                    logger.error(f"Could not send restart notification to group: {e}")
+
+            os.remove("restart_status.json")
+    except Exception as e:
+        logger.error(f"Error checking restart status: {e}")
+
     try:
         start_time = dt.now()
         uptime_str = ts(int((start_time - uptime).total_seconds() * 1000))
