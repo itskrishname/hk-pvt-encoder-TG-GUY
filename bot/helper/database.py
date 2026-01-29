@@ -19,7 +19,7 @@ class Database:
     
     defaults = {
         "crf": 29,
-        "preset": "faster",
+        "preset": "ultrafast",
         "resolution": "640x360",
         "audio_b": "32k",
         "audio_codec": "aac",
